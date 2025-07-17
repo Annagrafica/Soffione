@@ -11,20 +11,14 @@
     <a-scene>
       <!-- Sfondo webcam -->
       <a-assets>
-        <video id="webcam" autoplay playsinline width="640" height="480"></video>
+        <video id="webcam" autoplay playsinline webkit-playsinline muted></video>
       </a-assets>
-      <a-plane 
-        position="0 1.6 -3" 
-        rotation="0 0 0" 
-        width="16" 
-        height="9" 
-        material="shader: flat; src: #webcam">
-      </a-plane>
+      <a-videosphere src="#webcam" rotation="0 180 0"></a-videosphere>
 
       <!-- Semi volanti -->
       <a-entity id="semiContainer"></a-entity>
 
-      <a-entity camera></a-entity>
+      <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
 
     <script>

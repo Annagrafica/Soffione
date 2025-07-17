@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro con click sui semi</title>
+    <title>Soffioni AR - marker Hiro con click corretto</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -26,7 +26,11 @@
   <body>
     <div id="nameLabel"></div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene
+      embedded
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      raycaster="objects: .clickable;"
+      cursor="rayOrigin: mouse;">
       <a-assets>
         <!-- 28 immagini soffione -->
         <img id="soffione1" src="assets/soffione1.png" />
@@ -63,9 +67,7 @@
         <a-entity id="semiContainer"></a-entity>
       </a-marker>
 
-      <a-entity camera>
-        <a-cursor></a-cursor>
-      </a-entity>
+      <a-entity camera></a-entity>
     </a-scene>
 
     <script>
@@ -134,9 +136,9 @@
 
       semiContainer.setAttribute('semi-fluttuanti', '');
 
-      // Gestore click
-      document.querySelector('a-scene').addEventListener('click', (e) => {
-        const intersected = e.target;
+      // Mostra nome quando clicchi
+      document.querySelector('a-scene').addEventListener('click', (evt) => {
+        const intersected = evt.target;
         if (intersected.classList && intersected.classList.contains('clickable')) {
           const index = Array.from(semiContainer.children).indexOf(intersected);
           if (index !== -1) {

@@ -1,32 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro con profondità realistica</title>
+    <title>Soffioni Volanti - Webcam senza Marker</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
-      #nameLabel {
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.8);
-        padding: 10px 20px;
-        border-radius: 10px;
-        font-family: sans-serif;
-        font-size: 18px;
-        display: none;
-        pointer-events: none;
-        user-select: none;
-        z-index: 1000;
-      }
     </style>
   </head>
   <body>
-    <div id="nameLabel"></div>
-
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded>
       <a-assets>
         <!-- 28 immagini soffione -->
         <img id="soffione1" src="assets/soffione1.png" />
@@ -59,23 +41,15 @@
         <img id="soffione28" src="assets/soffione28.png" />
       </a-assets>
 
-      <a-marker preset="hiro">
-        <a-entity id="semiContainer"></a-entity>
-      </a-marker>
+      <!-- Aggiungi un cielo per il background -->
+      <a-sky color="#DDFFEE"></a-sky>
 
+      <a-entity id="semiContainer"></a-entity>
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
       const semiContainer = document.querySelector('#semiContainer');
-      const names = [
-        "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
-        "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
-        "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
-        "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
-        "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
-      ];
-
       const semiData = [];
 
       for (let i = 1; i <= 28; i++) {
@@ -93,12 +67,6 @@
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[i-1]}';
-          document.getElementById('nameLabel').style.display='block';
-          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
-        `);
-
         semiContainer.appendChild(img);
 
         semiData.push({
@@ -107,7 +75,7 @@
           floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
           baseScale: 0.7 + Math.random() * 0.6,
-          aspectRatio: aspect // 👈 AGGIUNTO QUI
+          aspectRatio: aspect
         });
       }
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro con nomi corretti</title>
+    <title>Soffioni AR - marker Hiro click ottimizzato</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -91,63 +91,65 @@
         const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
+        const container = document.createElement('a-entity');
+
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+        img.setAttribute('position', '0 0 0.001'); // leggermente avanti
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-        img.setAttribute('class', 'clickable');
-        img.setAttribute('data-nome', names[i - 1]); // associazione diretta del nome
 
-        semiContainer.appendChild(img);
+        // Piano invisibile per migliorare il click
+        const plane = document.createElement('a-plane');
+        plane.setAttribute('width', 1);
+        plane.setAttribute('height', 1);
+        plane.setAttribute('position', '0 0 0');
+        plane.setAttribute('rotation', '-90 0 0');
+        plane.setAttribute('opacity', 0);
+        plane.setAttribute('transparent', true);
+        plane.setAttribute('class', 'clickable');
+        plane.setAttribute('data-nome', names[i - 1]);
+
+        container.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+        container.appendChild(img);
+        container.appendChild(plane);
+        semiContainer.appendChild(container);
 
         semiData.push({
-          el: img,
+          el: container,
           basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
           floatSpeed: 0.3 + Math.random() * 0.5,
-          phase: Math.random() * Math.PI * 2,
-          baseScale: 0.7 + Math.random() * 0.6,
-          aspectRatio: aspect
+          phase: Math.random() * Math.PI * 2
         });
       }
 
-      // Movimento e scala proporzionale
+      // Movimento leggero
       AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time, timeDelta) {
+        tick: function (time) {
           semiData.forEach(data => {
             const t = time / 1000;
-
             const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.2;
             const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.05;
             const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.3;
-
             const newX = data.basePos.x + offsetX;
             const newY = data.basePos.y + offsetY;
             const newZ = data.basePos.z + offsetZ;
-
-            const scaleFactor = 1 / (1 + Math.abs(newZ));
-            const adjustedScaleY = data.baseScale * scaleFactor;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
-
             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
         }
       });
 
       semiContainer.setAttribute('semi-fluttuanti', '');
 
-      // Mostra nome corretto al click
+      // Mostra nome al click
       document.querySelector('a-scene').addEventListener('click', (evt) => {
-        const intersected = evt.target;
-        if (intersected.classList && intersected.classList.contains('clickable')) {
-          const name = intersected.getAttribute('data-nome');
+        const target = evt.target;
+        if (target.classList.contains('clickable')) {
+          const name = target.getAttribute('data-nome');
           const label = document.getElementById('nameLabel');
           label.innerText = name;
           label.style.display = 'block';
-          setTimeout(() => {
-            label.style.display = 'none';
-          }, 2000);
+          setTimeout(() => { label.style.display = 'none'; }, 2000);
         }
       });
     </script>

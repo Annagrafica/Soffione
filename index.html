@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti senza salto improvviso</title>
+    <title>Soffioni volanti - nessun seme nel centro</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -101,10 +101,32 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
+      // Limiti zona visibile
       const limitX = 3;
       const limitY = 3;
       const limitZ = 3;
 
+      // Zona centrale vietata per i semi (raggio di sicurezza)
+      const centralSafeRadius = 1.2;
+
+      // Genera posizione iniziale **sempre fuori dalla zona centrale** e possibilmente fuori dallo schermo (margine 0.2)
+      function startPositionAtEdgeOrOutside() {
+        while (true) {
+          const x = (Math.random() * 2 - 1) * (limitX + 0.5);
+          const y = (Math.random() * 2 - 1) * (limitY + 0.5);
+          const z = (Math.random() * 2 - 1) * (limitZ + 0.5);
+
+          // Distanza dal centro (0,0,0)
+          const dist = Math.sqrt(x*x + y*y + z*z);
+          // Condizione: posizione fuori dal centro + fuori dal volume visibile
+          const outsideCenter = dist > centralSafeRadius;
+          const outsideVolume = (Math.abs(x) > limitX) || (Math.abs(y) > limitY) || (Math.abs(z) > limitZ);
+
+          if (outsideCenter && outsideVolume) return {x, y, z};
+        }
+      }
+
+      // Velocità casuale moderata
       function randomVelocity() {
         return {
           x: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
@@ -113,27 +135,10 @@
         };
       }
 
-      function startPositionAtEdge() {
-        const face = Math.floor(Math.random() * 6);
-        const x = (Math.random() * 2 - 1) * limitX;
-        const y = (Math.random() * 2 - 1) * limitY;
-        const z = (Math.random() * 2 - 1) * limitZ;
-
-        switch(face) {
-          case 0: return { x: -limitX - 0.2, y: y,          z: z           };
-          case 1: return { x: limitX + 0.2,  y: y,          z: z           };
-          case 2: return { x: x,              y: -limitY - 0.2, z: z          };
-          case 3: return { x: x,              y: limitY + 0.2,  z: z          };
-          case 4: return { x: x,              y: y,          z: -limitZ - 0.2  };
-          case 5: return { x: x,              y: y,          z: limitZ + 0.2   };
-          default: return { x: x, y: y, z: z };
-        }
-      }
-
       const semiData = [];
 
       for(let i = 1; i <= totalSemi; i++) {
-        const pos = startPositionAtEdge();
+        const pos = startPositionAtEdgeOrOutside();
 
         const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
@@ -164,6 +169,52 @@
         });
       }
 
+      // Funzione per mantenere i semi fuori dalla zona centrale e dentro i limiti visibili
+      function enforceSafeZone(data) {
+        // Distanza dal centro
+        const distCenter = Math.sqrt(data.pos.x*data.pos.x + data.pos.y*data.pos.y + data.pos.z*data.pos.z);
+
+        // Se troppo vicino al centro, inverti velocità per uscire
+        if (distCenter < centralSafeRadius) {
+          // Inverti la velocità per far uscire il seme dal centro
+          data.velocity.x = -data.velocity.x;
+          data.velocity.y = -data.velocity.y;
+          data.velocity.z = -data.velocity.z;
+          // Sposta leggermente fuori centro per evitare stallo
+          data.pos.x += data.velocity.x * 5;
+          data.pos.y += data.velocity.y * 5;
+          data.pos.z += data.velocity.z * 5;
+        }
+
+        // Limiti di spazio, i semi possono andare un po' fuori
+        if (data.pos.x > limitX + 0.5) {
+          data.velocity.x = -Math.abs(data.velocity.x);
+          data.pos.x = limitX + 0.5;
+        }
+        else if (data.pos.x < -limitX - 0.5) {
+          data.velocity.x = Math.abs(data.velocity.x);
+          data.pos.x = -limitX - 0.5;
+        }
+
+        if (data.pos.y > limitY + 0.5) {
+          data.velocity.y = -Math.abs(data.velocity.y);
+          data.pos.y = limitY + 0.5;
+        }
+        else if (data.pos.y < -limitY - 0.5) {
+          data.velocity.y = Math.abs(data.velocity.y);
+          data.pos.y = -limitY - 0.5;
+        }
+
+        if (data.pos.z > limitZ + 0.5) {
+          data.velocity.z = -Math.abs(data.velocity.z);
+          data.pos.z = limitZ + 0.5;
+        }
+        else if (data.pos.z < -limitZ - 0.5) {
+          data.velocity.z = Math.abs(data.velocity.z);
+          data.pos.z = -limitZ - 0.5;
+        }
+      }
+
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function () {
           semiData.forEach(data => {
@@ -171,15 +222,8 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Limita posizione a dentro + margine ma non teletrasporta più
-            if (data.pos.x > limitX + 0.5) data.pos.x = limitX + 0.5;
-            else if (data.pos.x < -limitX - 0.5) data.pos.x = -limitX - 0.5;
-
-            if (data.pos.y > limitY + 0.5) data.pos.y = limitY + 0.5;
-            else if (data.pos.y < -limitY - 0.5) data.pos.y = -limitY - 0.5;
-
-            if (data.pos.z > limitZ + 0.5) data.pos.z = limitZ + 0.5;
-            else if (data.pos.z < -limitZ - 0.5) data.pos.z = -limitZ - 0.5;
+            // Mantieni safe zone e limiti
+            enforceSafeZone(data);
 
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;

@@ -171,9 +171,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
 velocity: {
-  x: dirX || (Math.random() - 0.5) * 0.00015,
-  y: dirY || (Math.random() - 0.5) * 0.0001,
-  z: dirZ || (Math.random() - 0.5) * 0.00015,
+  x: dirX || (Math.random() - 0.5) * 0.00003,
+  y: dirY || (Math.random() - 0.5) * 0.00002,
+  z: dirZ || (Math.random() - 0.5) * 0.00003,
 },
           baseScale: 2.5 + Math.random() * 1.5,
           aspectRatio: aspect,
@@ -216,10 +216,10 @@ const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-
-            if (Math.abs(data.pos.x) > limitX + 1 || Math.abs(data.pos.y) > limitY + 1 || Math.abs(data.pos.z) > limitZ + 1) {
-              removeSeme(index);
-            }
+const exitMargin = 1.5; // margine più grande
+if (Math.abs(data.pos.x) > limitX + exitMargin || Math.abs(data.pos.y) > limitY + exitMargin || Math.abs(data.pos.z) > limitZ + exitMargin) {
+  removeSeme(index);
+}
           });
         }
       });

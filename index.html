@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti con wrap-around</title>
+    <title>Soffioni volanti con wrap-around e scala più grande</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -68,7 +68,7 @@
         <img id="soffione21" src="assets/soffione21.png" />
         <img id="soffione22" src="assets/soffione22.png" />
         <img id="soffione23" src="assets/soffione23.png" />
-        <img id="soffione24" src="assets/soffione24.png" />
+        <img id="soffione24" src="soffione24.png" />
         <img id="soffione25" src="assets/soffione25.png" />
         <img id="soffione26" src="assets/soffione26.png" />
         <img id="soffione27" src="assets/soffione27.png" />
@@ -122,7 +122,6 @@
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
         img.setAttribute('scale', '1 1 1');
 
-        // Posizione iniziale casuale più distante
         const posX = Math.cos(angle) * distance;
         const posY = yPos;
         const posZ = -Math.sin(angle) * distance;
@@ -143,11 +142,11 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() * 0.02 + 0.01) * (Math.random() < 0.5 ? 1 : -1),
-            y: (Math.random() * 0.01 + 0.005) * (Math.random() < 0.5 ? 1 : -1),
-            z: (Math.random() * 0.02 + 0.01) * (Math.random() < 0.5 ? 1 : -1),
+            x: (Math.random() * 0.007 + 0.003) * (Math.random() < 0.5 ? 1 : -1),
+            y: (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
+            z: (Math.random() * 0.007 + 0.003) * (Math.random() < 0.5 ? 1 : -1),
           },
-          baseScale: 0.7 + Math.random() * 0.6,
+          baseScale: (0.7 + Math.random() * 0.6) * 2,
           aspectRatio: aspect,
         });
       }
@@ -155,27 +154,23 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function () {
           semiData.forEach(data => {
-            // Aggiorna posizione con velocità
             data.pos.x += data.velocity.x;
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Wrap-around semplice
             if(data.pos.x > limitX) data.pos.x = -limitX;
             else if(data.pos.x < -limitX) data.pos.x = limitX;
 
-            if(data.pos.y > limitY) data.pos.y = 0; // o -limitY per effetto più "ciclo"
+            if(data.pos.y > limitY) data.pos.y = 0;
             else if(data.pos.y < 0) data.pos.y = limitY;
 
             if(data.pos.z > limitZ) data.pos.z = -limitZ;
             else if(data.pos.z < -limitZ) data.pos.z = limitZ;
 
-            // Scala proporzionale per profondità
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            // Applica posizione e scala
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });

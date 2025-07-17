@@ -90,7 +90,7 @@
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
         img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
-        img.setAttribute('rotation', '-90 0 0'); // orientamento verticale
+        img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
         img.setAttribute('onclick', `
@@ -106,17 +106,17 @@
           basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
           floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
-          baseScale: 0.7 + Math.random() * 0.6 // dimensione di base casuale
+          baseScale: 0.7 + Math.random() * 0.6,
+          aspectRatio: aspect // 👈 AGGIUNTO QUI
         });
       }
 
-      // Movimento con scala proporzionale alla profondità (z)
+      // Movimento e scala proporzionale
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           semiData.forEach(data => {
             const t = time / 1000;
 
-            // Movimento orizzontale e leggero verticale
             const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.2;
             const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.05;
             const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.3;
@@ -125,14 +125,12 @@
             const newY = data.basePos.y + offsetY;
             const newZ = data.basePos.z + offsetZ;
 
-            // Scala proporzionale alla profondità (più vicino = più grande)
-            const scaleFactor = 1 / (1 + Math.abs(newZ)); // più lontano → più piccolo
-            const aspect = data.aspectRatio;
-const adjustedScaleY = data.baseScale * scaleFactor;
-const adjustedScaleX = adjustedScaleY * aspect;
-             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-           
+            const scaleFactor = 1 / (1 + Math.abs(newZ));
+            const adjustedScaleY = data.baseScale * scaleFactor;
+            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+            data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
         }
       });

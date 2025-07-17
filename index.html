@@ -111,11 +111,11 @@
       const limitZ = 3 * scaleMultiplier;
 
       function createSeme(index) {
-        const imgEl = document.getElementById(soffione${index + 1});
+        const imgEl = document.getElementById(`soffione${index + 1}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
-        img.setAttribute('src', #soffione${index + 1});
+        img.setAttribute('src', `#soffione${index + 1}`);
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
@@ -133,15 +133,15 @@
                   dirY = -(Math.random() * 0.008 + 0.002); dirX = (Math.random() - 0.5) * 0.005; dirZ = (Math.random() - 0.5) * 0.005; break;
         }
 
-        img.setAttribute('position', ${posX} ${posY} ${posZ});
+        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
         img.setAttribute('scale', '1 1 1');
-        img.setAttribute('onclick', 
+        img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[index]}';
           document.getElementById('nameLabel').style.display='block';
           setTimeout(() => {
             document.getElementById('nameLabel').style.display='none';
           }, 2000);
-        );
+        `);
 
         semiContainer.appendChild(img);
 
@@ -178,12 +178,12 @@
         }
       }
 
-      setInterval(spawnSemi, 300);
+      setInterval(spawnSemi, 500);
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
-          const dt = timeDelta / 800;
-          const speedMultiplier = 30 * scaleMultiplier;
+          const dt = timeDelta / 1000;
+          const speedMultiplier = 10 * scaleMultiplier;
 
           activeSemi.forEach(index => {
             const data = semiData[index];
@@ -191,26 +191,15 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-              // Blocca la scala massima per evitare semi giganti
-        const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-        const adjustedScaleY = Math.min(
-          data.baseScale * scaleFactor,
-          data.baseScale * 1.1, // Scala massima
-          3 * scaleMultiplier // Limite massimo assoluto
-        );
-        const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+            const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
+            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-        data.el.setAttribute('position', ${data.pos.x} ${data.pos.y} ${data.pos.z});
-        data.el.setAttribute('scale', ${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY});
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-        // Se troppo vicino alla camera o fuori dai limiti, rimuovi
-        if (
-          Math.abs(data.pos.x) > limitX + 1.5 ||
-          Math.abs(data.pos.y) > limitY + 1.5 ||
-          Math.abs(data.pos.z) > limitZ + 1.5 ||
-          data.pos.z < 0.5 // Troppo vicino: rigenera
-        ) {
-          removeSeme(index);
+            if (Math.abs(data.pos.x) > limitX + 1.5 || Math.abs(data.pos.y) > limitY + 1.5 || Math.abs(data.pos.z) > limitZ + 1.5) {
+              removeSeme(index);
             }
           });
         }

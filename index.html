@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Memento AR - Semi Volanti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.3.2/aframe/build/aframe-ar-nft.min.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #nameLabel {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-family: sans-serif;
+        font-size: 18px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="nameLabel"></div>
+    <a-scene
+      vr-mode-ui="enabled: false"
+      embedded
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+    >
+      <a-assets>
+        <!-- Carica tutte le immagini dei semi -->
+        <img id="soffione1" src="assets/soffione1.png">
+        <img id="soffione2" src="assets/soffione2.png">
+        <img id="soffione3" src="assets/soffione3.png">
+        <img id="soffione4" src="assets/soffione4.png">
+        <img id="soffione5" src="assets/soffione5.png">
+        <img id="soffione6" src="assets/soffione6.png">
+        <img id="soffione7" src="assets/soffione7.png">
+        <img id="soffione8" src="assets/soffione8.png">
+        <img id="soffione9" src="assets/soffione9.png">
+        <img id="soffione10" src="assets/soffione10.png">
+        <img id="soffione11" src="assets/soffione11.png">
+        <img id="soffione12" src="assets/soffione12.png">
+        <img id="soffione13" src="assets/soffione13.png">
+        <img id="soffione14" src="assets/soffione14.png">
+        <img id="soffione15" src="assets/soffione15.png">
+        <img id="soffione16" src="assets/soffione16.png">
+        <img id="soffione17" src="assets/soffione17.png">
+        <img id="soffione18" src="assets/soffione18.png">
+        <img id="soffione19" src="assets/soffione19.png">
+        <img id="soffione20" src="assets/soffione20.png">
+        <img id="soffione21" src="assets/soffione21.png">
+        <img id="soffione22" src="assets/soffione22.png">
+        <img id="soffione23" src="assets/soffione23.png">
+        <img id="soffione24" src="assets/soffione24.png">
+        <img id="soffione25" src="assets/soffione25.png">
+        <img id="soffione26" src="assets/soffione26.png">
+        <img id="soffione27" src="assets/soffione27.png">
+        <img id="soffione28" src="assets/soffione28.png">
+      </a-assets>
+
+      <!-- Container per i semi -->
+      <a-entity id="semiContainer">
+        <script>
+          const names = [
+            "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
+            "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
+            "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
+            "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
+            "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
+          ];
+
+          // Genera i semi con animazioni
+          for (let i = 1; i <= 28; i++) {
+            const angle = Math.random() * 360;
+            const distance = 1 + Math.random() * 2;
+            const yPos = 1 + Math.random() * 2;
+
+            document.write(`
+              <a-image
+                src="#soffione${i}"
+                position="${Math.cos(angle) * distance} ${yPos} ${-Math.sin(angle) * distance}"
+                scale="0.5 0.5 0.5"
+                animation="property: position; to: ${Math.cos(angle + 1)} ${yPos + 0.5} ${-Math.sin(angle + 1)}; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate"
+                animation__rot="property: rotation; to: 0 360 0; dur: 8000; loop: true"
+                onclick="document.getElementById('nameLabel').innerText='${names[i-1]}'; document.getElementById('nameLabel').style.display='block'; setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)"
+              ></a-image>
+            `);
+          }
+        </script>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

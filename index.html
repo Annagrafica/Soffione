@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni Volanti con comparsa graduale</title>
+    <title>Soffioni volanti con wrap-around</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -81,7 +81,6 @@
     </a-scene>
 
     <script>
-      // Attiva webcam come sfondo
       const video = document.getElementById('webcamVideo');
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -103,9 +102,12 @@
       ];
 
       const semiData = [];
-      let visibleCount = 0; // quanti semi sono visibili ora
 
-      // Creo tutti i semi, ma li nascondo subito (scala 0)
+      // Limiti per wrap-around (puoi regolarli)
+      const limitX = 3;
+      const limitY = 2.5;
+      const limitZ = 3;
+
       for(let i = 1; i <= totalSemi; i++) {
         const angle = Math.random() * 2 * Math.PI;
         const distance = 1 + Math.random() * 2;
@@ -116,10 +118,16 @@
 
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angle) * distance} ${yPos} ${-Math.sin(angle) * distance}`);
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-        img.setAttribute('scale', '0 0 0'); // nascosto all'inizio
+        img.setAttribute('scale', '1 1 1');
+
+        // Posizione iniziale casuale più distante
+        const posX = Math.cos(angle) * distance;
+        const posY = yPos;
+        const posZ = -Math.sin(angle) * distance;
+
+        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
 
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}';
@@ -133,47 +141,43 @@
 
         semiData.push({
           el: img,
-          basePos: { x: Math.cos(angle) * distance, y: yPos, z: -Math.sin(angle) * distance },
-          floatSpeed: 0.3 + Math.random() * 0.5,
-          phase: Math.random() * Math.PI * 2,
+          pos: { x: posX, y: posY, z: posZ },
+          velocity: {
+            x: (Math.random() * 0.02 + 0.01) * (Math.random() < 0.5 ? 1 : -1),
+            y: (Math.random() * 0.01 + 0.005) * (Math.random() < 0.5 ? 1 : -1),
+            z: (Math.random() * 0.02 + 0.01) * (Math.random() < 0.5 ? 1 : -1),
+          },
           baseScale: 0.7 + Math.random() * 0.6,
           aspectRatio: aspect,
-          visible: false
         });
       }
 
-      // Funzione per far comparire un semi ogni 300ms fino a tutti visibili
-      function showNextSemi() {
-        if(visibleCount < totalSemi) {
-          const data = semiData[visibleCount];
-          data.visible = true;
-          visibleCount++;
-          setTimeout(showNextSemi, 300);
-        }
-      }
-      showNextSemi();
-
-      // Componente per il movimento fluido di tutti i semi visibili
       AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function(time) {
-          const t = time / 1000;
+        tick: function () {
           semiData.forEach(data => {
-            if(data.visible) {
-              const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.2;
-              const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.05;
-              const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.3;
+            // Aggiorna posizione con velocità
+            data.pos.x += data.velocity.x;
+            data.pos.y += data.velocity.y;
+            data.pos.z += data.velocity.z;
 
-              const newX = data.basePos.x + offsetX;
-              const newY = data.basePos.y + offsetY;
-              const newZ = data.basePos.z + offsetZ;
+            // Wrap-around semplice
+            if(data.pos.x > limitX) data.pos.x = -limitX;
+            else if(data.pos.x < -limitX) data.pos.x = limitX;
 
-              const scaleFactor = 1 / (1 + Math.abs(newZ));
-              const adjustedScaleY = data.baseScale * scaleFactor;
-              const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+            if(data.pos.y > limitY) data.pos.y = 0; // o -limitY per effetto più "ciclo"
+            else if(data.pos.y < 0) data.pos.y = limitY;
 
-              data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-              data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-            }
+            if(data.pos.z > limitZ) data.pos.z = -limitZ;
+            else if(data.pos.z < -limitZ) data.pos.z = limitZ;
+
+            // Scala proporzionale per profondità
+            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+            const adjustedScaleY = data.baseScale * scaleFactor;
+            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+            // Applica posizione e scala
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
         }
       });

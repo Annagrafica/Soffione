@@ -130,8 +130,9 @@
             const aspect = data.aspectRatio;
 const adjustedScaleY = data.baseScale * scaleFactor;
 const adjustedScaleX = adjustedScaleY * aspect;
+             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
 data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-            data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+           
           });
         }
       });

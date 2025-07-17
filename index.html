@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti - stabile e adattato</title>
+    <title>Soffioni volanti - adattato a tutti gli schermi</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -104,18 +104,18 @@
       const maxActiveSemi = 15;
 
       // Adattamento dinamico per schermi
-      const isPortrait = window.innerHeight > window.innerWidth;
-      const scaleMultiplier = isPortrait ? 0.7 : 1; // più piccoli in verticale
-      const limitX = 3 * scaleMultiplier * (isPortrait ? 0.8 : 1);
-      const limitY = 2.5 * scaleMultiplier * (isPortrait ? 1.2 : 1);
+      const screenRatio = window.innerWidth / window.innerHeight;
+      const scaleMultiplier = screenRatio < 1 ? 0.7 : 1; // più piccoli su telefoni
+      const limitX = 3 * scaleMultiplier * screenRatio;
+      const limitY = 2.5 * scaleMultiplier;
       const limitZ = 3 * scaleMultiplier;
 
       function createSeme(index) {
-        const imgEl = document.getElementById(`soffione${index + 1}`);
+        const imgEl = document.getElementById(soffione${index + 1});
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${index + 1}`);
+        img.setAttribute('src', #soffione${index + 1});
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
@@ -133,15 +133,15 @@
                   dirY = -(Math.random() * 0.008 + 0.002); dirX = (Math.random() - 0.5) * 0.005; dirZ = (Math.random() - 0.5) * 0.005; break;
         }
 
-        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
+        img.setAttribute('position', ${posX} ${posY} ${posZ});
         img.setAttribute('scale', '1 1 1');
-        img.setAttribute('onclick', `
+        img.setAttribute('onclick', 
           document.getElementById('nameLabel').innerText='${names[index]}';
           document.getElementById('nameLabel').style.display='block';
           setTimeout(() => {
             document.getElementById('nameLabel').style.display='none';
           }, 2000);
-        `);
+        );
 
         semiContainer.appendChild(img);
 
@@ -153,7 +153,7 @@
             y: dirY || (Math.random() - 0.5) * 0.0001,
             z: dirZ || (Math.random() - 0.5) * 0.0002,
           },
-          baseScale: (2.5 + Math.random() * 1) * scaleMultiplier,
+          baseScale: (3.1 + Math.random() * 1.5) * scaleMultiplier,
           aspectRatio: aspect,
           active: true
         };
@@ -178,12 +178,12 @@
         }
       }
 
-      setInterval(spawnSemi, 500);
+      setInterval(spawnSemi, 300);
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 800;
-          const speedMultiplier = 25 * scaleMultiplier;
+          const speedMultiplier = 30 * scaleMultiplier;
 
           activeSemi.forEach(index => {
             const data = semiData[index];
@@ -191,24 +191,26 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Scala con limite massimo per evitare semi giganti
-            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-            const adjustedScaleY = Math.min(
-              data.baseScale * scaleFactor,
-              2.5 * scaleMultiplier // Limite massimo assoluto
-            );
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+              // Blocca la scala massima per evitare semi giganti
+        const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+        const adjustedScaleY = Math.min(
+          data.baseScale * scaleFactor,
+          data.baseScale * 1.1, // Scala massima
+          3 * scaleMultiplier // Limite massimo assoluto
+        );
+        const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+        data.el.setAttribute('position', ${data.pos.x} ${data.pos.y} ${data.pos.z});
+        data.el.setAttribute('scale', ${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY});
 
-            if (
-              Math.abs(data.pos.x) > limitX + 1.5 ||
-              Math.abs(data.pos.y) > limitY + 1.5 ||
-              Math.abs(data.pos.z) > limitZ + 1.5 ||
-              data.pos.z < 0.5
-            ) {
-              removeSeme(index);
+        // Se troppo vicino alla camera o fuori dai limiti, rimuovi
+        if (
+          Math.abs(data.pos.x) > limitX + 1.5 ||
+          Math.abs(data.pos.y) > limitY + 1.5 ||
+          Math.abs(data.pos.z) > limitZ + 1.5 ||
+          data.pos.z < 0.5 // Troppo vicino: rigenera
+        ) {
+          removeSeme(index);
             }
           });
         }

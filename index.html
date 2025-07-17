@@ -204,14 +204,15 @@ velocity: {
 
 AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    // timeDelta è in ms, converti in secondi per velocità più naturale
-    const dt = timeDelta / 1000; 
+    const dt = timeDelta / 1000; // converti in secondi
+
+    const speedMultiplier = 100; // qui puoi aumentare o diminuire la velocità globale
 
     activeSemi.forEach(index => {
       const data = semiData[index];
-      data.pos.x += data.velocity.x * dt;
-      data.pos.y += data.velocity.y * dt;
-      data.pos.z += data.velocity.z * dt;
+      data.pos.x += data.velocity.x * dt * speedMultiplier;
+      data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
       const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
       const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
@@ -226,6 +227,7 @@ AFRAME.registerComponent('semi-fluttuanti', {
     });
   }
 });
+
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

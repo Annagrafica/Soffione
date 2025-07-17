@@ -2,93 +2,95 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Soffioni Volanti con Webcam</title>
+  <title>Soffioni Volanti con Webcam (fix video)</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <style>
-    body, html { margin: 0; height: 100%; overflow: hidden; }
-  </style>
+  <style> body, html { margin:0; padding:0; overflow:hidden; height:100%; } </style>
 </head>
 <body>
   <a-scene embedded>
     <a-assets>
-      <!-- Metti qui le immagini soffione -->
       <img id="soffione1" src="assets/soffione1.png" />
       <img id="soffione2" src="assets/soffione2.png" />
-      <!-- ... fino a soffione28 -->
+      <!-- ... fino soffione28 -->
       <img id="soffione28" src="assets/soffione28.png" />
-      <video id="webcam" autoplay playsinline muted></video>
+
+      <!-- Video placeholder, verrà collegato JS -->
+      <video id="webcamVideo" autoplay playsinline muted></video>
     </a-assets>
 
-    <!-- Piano grande dietro alla camera con il video della webcam -->
-    <a-plane id="videoPlane" position="0 1.6 -3" rotation="0 0 0" width="6.4" height="4.8" material="shader: flat; src: #webcam"></a-plane>
+    <!-- Piano grande dietro camera, ma senza src per ora -->
+    <a-plane id="videoPlane" position="0 1.6 -4" rotation="0 0 0" width="16" height="9" material="shader: flat;"></a-plane>
 
-    <!-- Contenitore semi -->
     <a-entity id="semiContainer"></a-entity>
 
-    <!-- Camera -->
     <a-entity camera position="0 1.6 0"></a-entity>
   </a-scene>
 
-  <script>
-    const video = document.querySelector("#webcam");
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-        video.play();
-      })
-      .catch(err => {
-        alert("Errore accesso webcam: " + err.message);
-      });
+<script>
+  const video = document.getElementById('webcamVideo');
+  const videoPlane = document.getElementById('videoPlane');
 
-    const semiContainer = document.querySelector('#semiContainer');
-    const semiData = [];
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
 
-    // Creo i semi con immagini, posizione e velocità casuale
-    for (let i = 1; i <= 28; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 1.5 + Math.random() * 1.5;
-      const yPos = 0.5 + Math.random() * 1.5;
-
-      const img = document.createElement('a-image');
-      img.setAttribute('src', `#soffione${i}`);
-      img.setAttribute('position', `${Math.cos(angle) * distance} ${yPos} ${Math.sin(angle) * distance}`);
-      img.setAttribute('rotation', '-90 0 0');
-      img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-      semiContainer.appendChild(img);
-
-      semiData.push({
-        el: img,
-        basePos: { x: Math.cos(angle) * distance, y: yPos, z: Math.sin(angle) * distance },
-        floatSpeed: 0.3 + Math.random() * 0.5,
-        phase: Math.random() * Math.PI * 2,
-        baseScale: 0.7 + Math.random() * 0.5,
-        aspectRatio: 1 // opzionale: se vuoi puoi calcolare rapporto immagine
-      });
-    }
-
-    AFRAME.registerComponent('float-seeds', {
-      tick: function (time) {
-        const t = time / 1000;
-        semiData.forEach(data => {
-          const ox = Math.sin(t * data.floatSpeed + data.phase) * 0.3;
-          const oy = Math.cos(t * data.floatSpeed * 0.5 + data.phase) * 0.1;
-          const oz = Math.sin(t * data.floatSpeed + data.phase) * 0.3;
-
-          const newX = data.basePos.x + ox;
-          const newY = data.basePos.y + oy;
-          const newZ = data.basePos.z + oz;
-
-          // Scala proporzionale alla profondità (più vicino più grande)
-          const scaleFactor = 1 / (1 + Math.abs(newZ));
-          const scale = data.baseScale * scaleFactor;
-
-          data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-          data.el.setAttribute('scale', `${scale} ${scale} ${scale}`);
-        });
-      }
+      video.onloadeddata = () => {
+        console.log("Video webcam pronto, collego texture al piano...");
+        videoPlane.setAttribute('material', 'shader: flat; src: #webcamVideo');
+      };
+    })
+    .catch(err => {
+      console.error("Errore accesso webcam:", err);
+      alert("Errore accesso webcam: " + err.message);
     });
 
-    semiContainer.setAttribute('float-seeds', '');
-  </script>
+  const semiContainer = document.querySelector('#semiContainer');
+  const semiData = [];
+
+  for (let i = 1; i <= 28; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 1.5 + Math.random() * 1.5;
+    const yPos = 0.5 + Math.random() * 1.5;
+
+    const img = document.createElement('a-image');
+    img.setAttribute('src', `#soffione${i}`);
+    img.setAttribute('position', `${Math.cos(angle) * distance} ${yPos} ${Math.sin(angle) * distance}`);
+    img.setAttribute('rotation', '-90 0 0');
+    img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
+    semiContainer.appendChild(img);
+
+    semiData.push({
+      el: img,
+      basePos: { x: Math.cos(angle) * distance, y: yPos, z: Math.sin(angle) * distance },
+      floatSpeed: 0.3 + Math.random() * 0.5,
+      phase: Math.random() * Math.PI * 2,
+      baseScale: 0.7 + Math.random() * 0.5
+    });
+  }
+
+  AFRAME.registerComponent('float-seeds', {
+    tick: function (time) {
+      const t = time / 1000;
+      semiData.forEach(data => {
+        const ox = Math.sin(t * data.floatSpeed + data.phase) * 0.3;
+        const oy = Math.cos(t * data.floatSpeed * 0.5 + data.phase) * 0.1;
+        const oz = Math.sin(t * data.floatSpeed + data.phase) * 0.3;
+
+        const newX = data.basePos.x + ox;
+        const newY = data.basePos.y + oy;
+        const newZ = data.basePos.z + oz;
+
+        const scaleFactor = 1 / (1 + Math.abs(newZ));
+        const scale = data.baseScale * scaleFactor;
+
+        data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+        data.el.setAttribute('scale', `${scale} ${scale} ${scale}`);
+      });
+    }
+  });
+
+  semiContainer.setAttribute('float-seeds', '');
+</script>
 </body>
 </html>

@@ -178,11 +178,11 @@
         }
       }
 
-      setInterval(spawnSemi, 500);
+      setInterval(spawnSemi, 300);
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
-          const dt = timeDelta / 1000;
+          const dt = timeDelta / 800;
           const speedMultiplier = 20 * scaleMultiplier;
 
           activeSemi.forEach(index => {

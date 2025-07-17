@@ -120,7 +120,7 @@
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
         img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'alphaTest: 0.5; transparent: true; opacity: 1');
+        img.setAttribute('material', 'transparent: true; depthTest: false; depthWrite: false; opacity: 1');
         img.setAttribute('scale', '1 1 1');
 
         const posX = Math.cos(angle) * distance;
@@ -139,15 +139,15 @@
 
         semiContainer.appendChild(img);
 
-        const vx = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
-        const vy = (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
-        const vz = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
+        const vx = (Math.random() * 0.002 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
+        const vy = (Math.random() * 0.001 + 0.0003) * (Math.random() < 0.5 ? 1 : -1);
+        const vz = (Math.random() * 0.002 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
 
         semiData.push({
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: { x: vx, y: vy, z: vz },
-          baseScale: (0.7 + Math.random() * 0.6) * 2,
+          baseScale: (0.7 + Math.random() * 0.6) * 3,
           aspectRatio: aspect
         });
       }
@@ -185,9 +185,7 @@
             }
 
             // Calcolo scala limitata per evitare lampeggio
-            const minScale = 0.3;
-            const maxScale = data.baseScale;
-
+            const minScale = 0.4;
             let scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             scaleFactor = Math.min(Math.max(scaleFactor, minScale / data.baseScale), 1);
 
@@ -196,8 +194,6 @@
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-            // Opacità sempre piena, niente lampeggio
-            data.el.setAttribute('material', 'opacity: 1; transparent: true; alphaTest: 0.5');
           });
         }
       });

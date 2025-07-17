@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro con profondità realistica</title>
+    <title>Soffioni AR - marker Hiro con click sui semi</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -63,7 +63,9 @@
         <a-entity id="semiContainer"></a-entity>
       </a-marker>
 
-      <a-entity camera></a-entity>
+      <a-entity camera>
+        <a-cursor></a-cursor>
+      </a-entity>
     </a-scene>
 
     <script>
@@ -92,12 +94,7 @@
         img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-
-        img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[i-1]}';
-          document.getElementById('nameLabel').style.display='block';
-          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
-        `);
+        img.setAttribute('class', 'clickable');
 
         semiContainer.appendChild(img);
 
@@ -107,7 +104,7 @@
           floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
           baseScale: 0.7 + Math.random() * 0.6,
-          aspectRatio: aspect // 👈 AGGIUNTO QUI
+          aspectRatio: aspect
         });
       }
 
@@ -136,6 +133,23 @@
       });
 
       semiContainer.setAttribute('semi-fluttuanti', '');
+
+      // Gestore click
+      document.querySelector('a-scene').addEventListener('click', (e) => {
+        const intersected = e.target;
+        if (intersected.classList && intersected.classList.contains('clickable')) {
+          const index = Array.from(semiContainer.children).indexOf(intersected);
+          if (index !== -1) {
+            const name = names[index];
+            const label = document.getElementById('nameLabel');
+            label.innerText = name;
+            label.style.display = 'block';
+            setTimeout(() => {
+              label.style.display = 'none';
+            }, 2000);
+          }
+        }
+      });
     </script>
   </body>
 </html>

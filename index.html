@@ -183,7 +183,7 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 30 * scaleMultiplier;
+          const speedMultiplier = 20 * scaleMultiplier;
 
           activeSemi.forEach(index => {
             const data = semiData[index];

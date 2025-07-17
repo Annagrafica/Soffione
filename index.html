@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro 28 semi raddrizzati</title>
+    <title>Soffioni AR - marker Hiro 28 semi con volo separato</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -19,6 +19,7 @@
         display: none;
         pointer-events: none;
         user-select: none;
+        z-index: 1000;
       }
     </style>
   </head>
@@ -27,7 +28,7 @@
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       <a-assets>
-        <!-- Carica qui le 28 immagini PNG -->
+        <!-- Inserisci qui le 28 immagini PNG rettangolari verticali -->
         <img id="soffione1" src="assets/soffione1.png" />
         <img id="soffione2" src="assets/soffione2.png" />
         <img id="soffione3" src="assets/soffione3.png" />
@@ -75,48 +76,73 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-     for (let i = 1; i <= 28; i++) {
-  const angle = Math.random() * 360;
-  const angleRad = angle * Math.PI / 180;
-  const nextAngleRad = (angle + 30) * Math.PI / 180;
-  const distance = 1 + Math.random() * 1.5;
-  const yPos = Math.random() * 1.5;
- // Genera durata casuale tra 4000 ms (veloce) e 12000 ms (lento)
-  const rotDuration = 4000 + Math.random() * 8000;
-  const imgEl = document.getElementById(`soffione${i}`);
-  const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
+      const baseScale = 0.4;
+      const semiData = [];
 
-  const img = document.createElement('a-image');
-  img.setAttribute('src', `#soffione${i}`);
-  img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+      for (let i = 1; i <= 28; i++) {
+        const angle = Math.random() * 360;
+        const angleRad = angle * Math.PI / 180;
+        const distance = 1 + Math.random() * 1.5;
+        const yPos = Math.random() * 1.5;
 
-  const baseScale = 0.4;
-  img.setAttribute('scale', `${baseScale * aspect} ${baseScale} ${baseScale}`);
+        const imgEl = document.getElementById(`soffione${i}`);
+        const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
-  img.setAttribute('rotation', '-90 0 0');
-  img.setAttribute('animation', `
-    property: position;
-    to: ${Math.cos(nextAngleRad) * distance} ${yPos + 0.5} ${-Math.sin(nextAngleRad) * distance};
-    dur: 3000;
-    easing: easeInOutSine;
-    loop: true;
-    dir: alternate
-  `);
-  img.setAttribute('animation__rot', `
-    property: rotation;
-    to: -90 360 0;
-    dur: ${rotDuration};
-    loop: true
-  `);
+        const img = document.createElement('a-image');
+        img.setAttribute('src', `#soffione${i}`);
+        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+        img.setAttribute('scale', `${baseScale * aspect} ${baseScale} ${baseScale}`);
+        img.setAttribute('rotation', '-90 0 0');
 
-  img.setAttribute('onclick', `
-    document.getElementById('nameLabel').innerText='${names[i-1]}';
-    document.getElementById('nameLabel').style.display='block';
-    setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
-  `);
+        img.setAttribute('onclick', `
+          document.getElementById('nameLabel').innerText='${names[i-1]}'; 
+          document.getElementById('nameLabel').style.display='block'; 
+          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+        `);
 
-  semiContainer.appendChild(img);
-}
+        semiContainer.appendChild(img);
+
+        // Genera direzione random normalizzata (vettore unitario)
+        let dir = {
+          x: Math.random() * 2 - 1,
+          y: Math.random() * 1 - 0.5,
+          z: Math.random() * 2 - 1,
+        };
+        const len = Math.sqrt(dir.x*dir.x + dir.y*dir.y + dir.z*dir.z);
+        dir.x /= len;
+        dir.y /= len;
+        dir.z /= len;
+
+        semiData.push({
+          el: img,
+          basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
+          direction: dir,
+          speed: 0.5 + Math.random(),
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      AFRAME.registerComponent('semi-movement', {
+        tick: function(time, timeDelta) {
+          semiData.forEach(data => {
+            const t = time / 1000;
+            const oscillation = Math.sin(t * data.speed + data.phase) * 0.5;
+
+            const newX = data.basePos.x + data.direction.x * oscillation;
+            const newY = data.basePos.y + data.direction.y * oscillation;
+            const newZ = data.basePos.z + data.direction.z * oscillation;
+
+            data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+
+            // Rotazione lenta su Y (asse verticale)
+            const rotation = data.el.getAttribute('rotation');
+            const newYRot = (rotation.y + 0.2 * data.speed) % 360;
+            data.el.setAttribute('rotation', `-90 ${newYRot} 0`);
+          });
+        }
+      });
+
+      semiContainer.setAttribute('semi-movement', '');
     </script>
   </body>
 </html>

@@ -84,20 +84,20 @@
         const distance = 1 + Math.random() * 1.0;
         const yPos = Math.random() * 1.0;
 
-        const imgEl = document.getElementById(soffione${i});
+        const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
-        img.setAttribute('src', #soffione${i});
-        img.setAttribute('position', ${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance});
+        img.setAttribute('src', `#soffione${i}`);
+        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        img.setAttribute('onclick', 
+        img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}';
           document.getElementById('nameLabel').style.display='block';
           setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
-        );
+        `);
 
         semiContainer.appendChild(img);
 
@@ -129,8 +129,8 @@
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            data.el.setAttribute('position', ${newX} ${newY} ${newZ});
-            data.el.setAttribute('scale', ${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY});
+            data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
         }
       });

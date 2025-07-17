@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti - grandi e frequenti</title>
+    <title>Soffioni volanti - adattato a tutti gli schermi</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -75,7 +75,6 @@
       </a-assets>
 
       <a-entity id="semiContainer"></a-entity>
-
       <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
 
@@ -102,12 +101,14 @@
 
       const semiData = [];
       const activeSemi = [];
-      const maxActiveSemi = 15; // massimo semi visibili contemporaneamente
+      const maxActiveSemi = 15;
 
-      // Limiti per ingresso/uscita
-      const limitX = 3;
-      const limitY = 2.5;
-      const limitZ = 3;
+      // Adattamento dinamico per schermi
+      const screenRatio = window.innerWidth / window.innerHeight;
+      const scaleMultiplier = screenRatio < 1 ? 0.7 : 1; // più piccoli su telefoni
+      const limitX = 3 * scaleMultiplier * screenRatio;
+      const limitY = 2.5 * scaleMultiplier;
+      const limitZ = 3 * scaleMultiplier;
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -122,41 +123,18 @@
         let posX, posY, posZ, dirX, dirY, dirZ;
 
         switch(startEdge) {
-          case 0: // da sinistra
-            posX = -limitX - 0.5;
-            posY = Math.random() * limitY;
-            posZ = (Math.random() - 0.5) * limitZ * 2;
-            dirX = Math.random() * 0.01 + 0.005;
-            dirZ = (Math.random() - 0.5) * 0.01;
-            break;
-          case 1: // da destra
-            posX = limitX + 0.5;
-            posY = Math.random() * limitY;
-            posZ = (Math.random() - 0.5) * limitZ * 2;
-            dirX = -(Math.random() * 0.01 + 0.005);
-            dirZ = (Math.random() - 0.5) * 0.01;
-            break;
-          case 2: // dal basso
-            posX = (Math.random() - 0.5) * limitX * 2;
-            posY = -0.5;
-            posZ = (Math.random() - 0.5) * limitZ * 2;
-            dirY = Math.random() * 0.008 + 0.004;
-            dirX = (Math.random() - 0.5) * 0.01;
-            dirZ = (Math.random() - 0.5) * 0.01;
-            break;
-          case 3: // dall’alto
-            posX = (Math.random() - 0.5) * limitX * 2;
-            posY = limitY + 0.5;
-            posZ = (Math.random() - 0.5) * limitZ * 2;
-            dirY = -(Math.random() * 0.008 + 0.004);
-            dirX = (Math.random() - 0.5) * 0.01;
-            dirZ = (Math.random() - 0.5) * 0.01;
-            break;
+          case 0: posX = -limitX - 0.5; posY = Math.random() * limitY; posZ = (Math.random() - 0.5) * limitZ * 2;
+                  dirX = Math.random() * 0.01 + 0.002; dirZ = (Math.random() - 0.5) * 0.005; break;
+          case 1: posX = limitX + 0.5; posY = Math.random() * limitY; posZ = (Math.random() - 0.5) * limitZ * 2;
+                  dirX = -(Math.random() * 0.01 + 0.002); dirZ = (Math.random() - 0.5) * 0.005; break;
+          case 2: posX = (Math.random() - 0.5) * limitX * 2; posY = -0.5; posZ = (Math.random() - 0.5) * limitZ * 2;
+                  dirY = Math.random() * 0.008 + 0.002; dirX = (Math.random() - 0.5) * 0.005; dirZ = (Math.random() - 0.5) * 0.005; break;
+          case 3: posX = (Math.random() - 0.5) * limitX * 2; posY = limitY + 0.5; posZ = (Math.random() - 0.5) * limitZ * 2;
+                  dirY = -(Math.random() * 0.008 + 0.002); dirX = (Math.random() - 0.5) * 0.005; dirZ = (Math.random() - 0.5) * 0.005; break;
         }
 
         img.setAttribute('position', `${posX} ${posY} ${posZ}`);
         img.setAttribute('scale', '1 1 1');
-
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[index]}';
           document.getElementById('nameLabel').style.display='block';
@@ -170,12 +148,12 @@
         semiData[index] = {
           el: img,
           pos: { x: posX, y: posY, z: posZ },
-velocity: {
-  x: dirX || (Math.random() - 0.5) * 0.0003,
-  y: dirY || (Math.random() - 0.5) * 0.0002,
-  z: dirZ || (Math.random() - 0.5) * 0.0003,
-},
-          baseScale: 3.1 + Math.random() * 1.5,
+          velocity: {
+            x: dirX || (Math.random() - 0.5) * 0.0002,
+            y: dirY || (Math.random() - 0.5) * 0.0001,
+            z: dirZ || (Math.random() - 0.5) * 0.0002,
+          },
+          baseScale: (3.1 + Math.random() * 1.5) * scaleMultiplier,
           aspectRatio: aspect,
           active: true
         };
@@ -200,34 +178,32 @@ velocity: {
         }
       }
 
-      setInterval(spawnSemi, 500); // nuovo seme ogni secondo circa
+      setInterval(spawnSemi, 500);
 
-AFRAME.registerComponent('semi-fluttuanti', {
-  tick: function (time, timeDelta) {
-    const dt = timeDelta / 800; // converti in secondi
+      AFRAME.registerComponent('semi-fluttuanti', {
+        tick: function (time, timeDelta) {
+          const dt = timeDelta / 1000;
+          const speedMultiplier = 10 * scaleMultiplier;
 
-    const speedMultiplier = 15; // qui puoi aumentare o diminuire la velocità globale
+          activeSemi.forEach(index => {
+            const data = semiData[index];
+            data.pos.x += data.velocity.x * dt * speedMultiplier;
+            data.pos.y += data.velocity.y * dt * speedMultiplier;
+            data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-    activeSemi.forEach(index => {
-      const data = semiData[index];
-      data.pos.x += data.velocity.x * dt * speedMultiplier;
-      data.pos.y += data.velocity.y * dt * speedMultiplier;
-      data.pos.z += data.velocity.z * dt * speedMultiplier;
+            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+            const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
+            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-      const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-      const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
-      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-
-      if (Math.abs(data.pos.x) > limitX + 1.5 || Math.abs(data.pos.y) > limitY + 1.5 || Math.abs(data.pos.z) > limitZ + 1.5) {
-        removeSeme(index);
-      }
-    });
-  }
-});
-
+            if (Math.abs(data.pos.x) > limitX + 1.5 || Math.abs(data.pos.y) > limitY + 1.5 || Math.abs(data.pos.z) > limitZ + 1.5) {
+              removeSeme(index);
+            }
+          });
+        }
+      });
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

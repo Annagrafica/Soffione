@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Memento AR - Semi Volanti</title>
-    <meta charset="utf-8">
+    <title>Soffione AR</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
       #nameLabel {
@@ -24,12 +23,11 @@
   <body>
     <div id="nameLabel"></div>
     <a-scene
-      vr-mode-ui="enabled: false"
       embedded
-      arjs="sourceType: webcam; debugUIEnabled: false;"
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
     >
       <a-assets>
-        <!-- Carica immagini semi -->
+        <!-- Carica le immagini dei semi -->
         <img id="soffione1" src="assets/soffione1.png">
         <img id="soffione2" src="assets/soffione2.png">
         <img id="soffione3" src="assets/soffione3.png">
@@ -60,47 +58,40 @@
         <img id="soffione28" src="assets/soffione28.png">
       </a-assets>
 
-      <!-- Marker -->
-      <a-marker preset="hiro">
+      <!-- Marker personalizzato -->
+      <a-marker type="pattern" url="assets/pattern-soffione.patt">
         <a-entity id="semiContainer">
-          <a-entity
-            position="0 0 0"
-            rotation="0 0 0"
-            animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear"
-          >
-            <a-entity id="seeds"></a-entity>
-          </a-entity>
+          <script>
+            const names = [
+              "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
+              "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
+              "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
+              "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
+              "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
+            ];
+
+            for (let i = 1; i <= 28; i++) {
+              const angle = Math.random() * Math.PI * 2;
+              const radius = 1 + Math.random() * 0.5;
+              const x = Math.cos(angle) * radius;
+              const y = Math.random() * 1.5;
+              const z = Math.sin(angle) * radius;
+
+              document.write(`
+                <a-image 
+                  src="#soffione${i}" 
+                  position="${x} ${y} ${z}" 
+                  scale="0.3 0.3 0.3"
+                  animation="property: position; to: ${x} ${y + 0.5} ${z}; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                  onclick="document.getElementById('nameLabel').innerText='${names[i-1]}'; document.getElementById('nameLabel').style.display='block'; setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)"
+                ></a-image>
+              `);
+            }
+          </script>
         </a-entity>
       </a-marker>
 
       <a-entity camera></a-entity>
     </a-scene>
-
-    <script>
-      const container = document.getElementById('seeds');
-      const names = [
-        "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
-        "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
-        "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
-        "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
-        "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
-      ];
-
-      for (let i = 1; i <= 28; i++) {
-        const angle = Math.random() * 360;
-        const distance = 1 + Math.random();
-        const height = Math.random() * 2;
-
-        const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('scale', '0.5 0.5 0.5');
-        img.setAttribute('position', `${Math.cos(angle) * distance} ${height} ${Math.sin(angle) * distance}`);
-        img.setAttribute('animation', `property: position; to: ${Math.cos(angle) * (distance + 0.5)} ${height + 0.5} ${Math.sin(angle) * (distance + 0.5)}; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate`);
-
-        img.setAttribute('onclick', `document.getElementById('nameLabel').innerText='${names[i-1]}'; document.getElementById('nameLabel').style.display='block'; setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)`);
-
-        container.appendChild(img);
-      }
-    </script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti - nessun seme nel centro</title>
+    <title>Soffioni volanti - grandi e frequenti</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -38,7 +38,6 @@
     </style>
   </head>
   <body>
-
     <div id="nameLabel"></div>
     <video id="webcamVideo" autoplay playsinline muted></video>
 
@@ -101,57 +100,65 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-      // Limiti zona visibile
+      const semiData = [];
+      const activeSemi = [];
+      const maxActiveSemi = 10; // massimo semi visibili contemporaneamente
+
+      // Limiti per ingresso/uscita
       const limitX = 3;
-      const limitY = 3;
+      const limitY = 2.5;
       const limitZ = 3;
 
-      // Zona centrale vietata per i semi (raggio di sicurezza)
-      const centralSafeRadius = 1.2;
-
-      // Genera posizione iniziale **sempre fuori dalla zona centrale** e possibilmente fuori dallo schermo (margine 0.2)
-      function startPositionAtEdgeOrOutside() {
-        while (true) {
-          const x = (Math.random() * 2 - 1) * (limitX + 0.5);
-          const y = (Math.random() * 2 - 1) * (limitY + 0.5);
-          const z = (Math.random() * 2 - 1) * (limitZ + 0.5);
-
-          // Distanza dal centro (0,0,0)
-          const dist = Math.sqrt(x*x + y*y + z*z);
-          // Condizione: posizione fuori dal centro + fuori dal volume visibile
-          const outsideCenter = dist > centralSafeRadius;
-          const outsideVolume = (Math.abs(x) > limitX) || (Math.abs(y) > limitY) || (Math.abs(z) > limitZ);
-
-          if (outsideCenter && outsideVolume) return {x, y, z};
-        }
-      }
-
-      // Velocità casuale moderata
-      function randomVelocity() {
-        return {
-          x: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
-          y: (Math.random() * 0.00075 + 0.00025) * (Math.random() < 0.5 ? 1 : -1),
-          z: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
-        };
-      }
-
-      const semiData = [];
-
-      for(let i = 1; i <= totalSemi; i++) {
-        const pos = startPositionAtEdgeOrOutside();
-
-        const imgEl = document.getElementById(`soffione${i}`);
+      function createSeme(index) {
+        const imgEl = document.getElementById(`soffione${index + 1}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${i}`);
+        img.setAttribute('src', `#soffione${index + 1}`);
         img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'transparent: true; alphaTest: 0.5; depthTest: false');
-        img.setAttribute('scale', '1.8 1.8 1.8');
-        img.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+        img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
+
+        const startEdge = Math.floor(Math.random() * 4);
+        let posX, posY, posZ, dirX, dirY, dirZ;
+
+        switch(startEdge) {
+          case 0: // da sinistra
+            posX = -limitX - 0.5;
+            posY = Math.random() * limitY;
+            posZ = (Math.random() - 0.5) * limitZ * 2;
+            dirX = Math.random() * 0.01 + 0.005;
+            dirZ = (Math.random() - 0.5) * 0.01;
+            break;
+          case 1: // da destra
+            posX = limitX + 0.5;
+            posY = Math.random() * limitY;
+            posZ = (Math.random() - 0.5) * limitZ * 2;
+            dirX = -(Math.random() * 0.01 + 0.005);
+            dirZ = (Math.random() - 0.5) * 0.01;
+            break;
+          case 2: // dal basso
+            posX = (Math.random() - 0.5) * limitX * 2;
+            posY = -0.5;
+            posZ = (Math.random() - 0.5) * limitZ * 2;
+            dirY = Math.random() * 0.008 + 0.004;
+            dirX = (Math.random() - 0.5) * 0.01;
+            dirZ = (Math.random() - 0.5) * 0.01;
+            break;
+          case 3: // dall’alto
+            posX = (Math.random() - 0.5) * limitX * 2;
+            posY = limitY + 0.5;
+            posZ = (Math.random() - 0.5) * limitZ * 2;
+            dirY = -(Math.random() * 0.008 + 0.004);
+            dirX = (Math.random() - 0.5) * 0.01;
+            dirZ = (Math.random() - 0.5) * 0.01;
+            break;
+        }
+
+        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
+        img.setAttribute('scale', '1 1 1');
 
         img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[i-1]}';
+          document.getElementById('nameLabel').innerText='${names[index]}';
           document.getElementById('nameLabel').style.display='block';
           setTimeout(() => {
             document.getElementById('nameLabel').style.display='none';
@@ -160,70 +167,48 @@
 
         semiContainer.appendChild(img);
 
-        semiData.push({
+        semiData[index] = {
           el: img,
-          pos: pos,
-          velocity: randomVelocity(),
-baseScale: 2.5 + Math.random() * 1.5,  // scala casuale tra 2.5 e 4
+          pos: { x: posX, y: posY, z: posZ },
+          velocity: {
+            x: dirX || (Math.random() - 0.5) * 0.005,
+            y: dirY || (Math.random() - 0.5) * 0.005,
+            z: dirZ || (Math.random() - 0.5) * 0.005,
+          },
+          baseScale: 2.5 + Math.random() * 1.5,
           aspectRatio: aspect,
-        });
+          active: true
+        };
+
+        activeSemi.push(index);
       }
 
-      // Funzione per mantenere i semi fuori dalla zona centrale e dentro i limiti visibili
-      function enforceSafeZone(data) {
-        // Distanza dal centro
-        const distCenter = Math.sqrt(data.pos.x*data.pos.x + data.pos.y*data.pos.y + data.pos.z*data.pos.z);
+      function removeSeme(index) {
+        semiContainer.removeChild(semiData[index].el);
+        semiData[index].active = false;
+        const activeIndex = activeSemi.indexOf(index);
+        if (activeIndex !== -1) activeSemi.splice(activeIndex, 1);
+      }
 
-        // Se troppo vicino al centro, inverti velocità per uscire
-        if (distCenter < centralSafeRadius) {
-          // Inverti la velocità per far uscire il seme dal centro
-          data.velocity.x = -data.velocity.x;
-          data.velocity.y = -data.velocity.y;
-          data.velocity.z = -data.velocity.z;
-          // Sposta leggermente fuori centro per evitare stallo
-          data.pos.x += data.velocity.x * 5;
-          data.pos.y += data.velocity.y * 5;
-          data.pos.z += data.velocity.z * 5;
-        }
-
-        // Limiti di spazio, i semi possono andare un po' fuori
-        if (data.pos.x > limitX + 0.5) {
-          data.velocity.x = -Math.abs(data.velocity.x);
-          data.pos.x = limitX + 0.5;
-        }
-        else if (data.pos.x < -limitX - 0.5) {
-          data.velocity.x = Math.abs(data.velocity.x);
-          data.pos.x = -limitX - 0.5;
-        }
-
-        if (data.pos.y > limitY + 0.5) {
-          data.velocity.y = -Math.abs(data.velocity.y);
-          data.pos.y = limitY + 0.5;
-        }
-        else if (data.pos.y < -limitY - 0.5) {
-          data.velocity.y = Math.abs(data.velocity.y);
-          data.pos.y = -limitY - 0.5;
-        }
-
-        if (data.pos.z > limitZ + 0.5) {
-          data.velocity.z = -Math.abs(data.velocity.z);
-          data.pos.z = limitZ + 0.5;
-        }
-        else if (data.pos.z < -limitZ - 0.5) {
-          data.velocity.z = Math.abs(data.velocity.z);
-          data.pos.z = -limitZ - 0.5;
+      function spawnSemi() {
+        if (activeSemi.length < maxActiveSemi) {
+          let index;
+          do {
+            index = Math.floor(Math.random() * totalSemi);
+          } while (semiData[index] && semiData[index].active);
+          createSeme(index);
         }
       }
+
+      setInterval(spawnSemi, 1000); // nuovo seme ogni secondo circa
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function () {
-          semiData.forEach(data => {
+          activeSemi.forEach(index => {
+            const data = semiData[index];
             data.pos.x += data.velocity.x;
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
-
-            // Mantieni safe zone e limiti
-            enforceSafeZone(data);
 
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
@@ -231,6 +216,10 @@ baseScale: 2.5 + Math.random() * 1.5,  // scala casuale tra 2.5 e 4
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+
+            if (Math.abs(data.pos.x) > limitX + 1 || Math.abs(data.pos.y) > limitY + 1 || Math.abs(data.pos.z) > limitZ + 1) {
+              removeSeme(index);
+            }
           });
         }
       });

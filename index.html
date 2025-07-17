@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro semi proporzionati e fluttuanti</title>
+    <title>Soffioni AR - marker Hiro semi fluttuanti orizzontali</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -79,7 +79,6 @@
       const baseScale = 0.6; // semi più grandi
       const semiData = [];
 
-      // Carica i semi con proporzione corretta e movimento fluttuante
       for (let i = 1; i <= 28; i++) {
         const angle = Math.random() * 360;
         const angleRad = angle * Math.PI / 180;
@@ -107,26 +106,27 @@
         semiData.push({
           el: img,
           basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
-          floatSpeed: 0.2 + Math.random() * 0.3,
+          floatSpeed: 0.1 + Math.random() * 0.3,
           phase: Math.random() * Math.PI * 2
         });
       }
 
-      // Movimento fluttuante senza rotazione completa
+      // Movimento fluttuante orizzontale e leggero verticale
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           semiData.forEach(data => {
             const t = time / 1000; // tempo in secondi
-            const offset = Math.sin(t * data.floatSpeed + data.phase) * 0.1;
 
-            const newX = data.basePos.x + Math.sin(t * data.floatSpeed) * 0.05;
-            const newY = data.basePos.y + offset;
-            const newZ = data.basePos.z + Math.cos(t * data.floatSpeed) * 0.05;
+            // Movimento orizzontale e leggero verticale
+            const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.2; // spostamento laterale
+            const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.05; // piccola oscillazione verticale
+            const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.2; // spostamento avanti/indietro
+
+            const newX = data.basePos.x + offsetX;
+            const newY = data.basePos.y + offsetY;
+            const newZ = data.basePos.z + offsetZ;
 
             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-
-            const newXRot = -90 + Math.sin(t * data.floatSpeed + data.phase) * 20; // max ±20°
-            data.el.setAttribute('rotation', `${newXRot} 0 0`);
           });
         }
       });

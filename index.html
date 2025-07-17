@@ -102,7 +102,7 @@
 
       const semiData = [];
       const activeSemi = [];
-      const maxActiveSemi = 10; // massimo semi visibili contemporaneamente
+      const maxActiveSemi = 15; // massimo semi visibili contemporaneamente
 
       // Limiti per ingresso/uscita
       const limitX = 3;
@@ -171,9 +171,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: dirX || (Math.random() - 0.5) * 0.005,
-            y: dirY || (Math.random() - 0.5) * 0.005,
-            z: dirZ || (Math.random() - 0.5) * 0.005,
+            x: dirX || (Math.random() - 0.3) * 0.005,
+            y: dirY || (Math.random() - 0.3) * 0.005,
+            z: dirZ || (Math.random() - 0.3) * 0.005,
           },
           baseScale: 2.5 + Math.random() * 1.5,
           aspectRatio: aspect,
@@ -200,7 +200,7 @@
         }
       }
 
-      setInterval(spawnSemi, 1000); // nuovo seme ogni secondo circa
+      setInterval(spawnSemi, 500); // nuovo seme ogni secondo circa
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function () {
@@ -211,7 +211,7 @@
             data.pos.z += data.velocity.z;
 
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-            const adjustedScaleY = data.baseScale * scaleFactor;
+const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.2);
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);

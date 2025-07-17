@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti con wrap-around, scala più grande e dissolvenza</title>
+    <title>Soffioni volanti da fuori schermo con dissolvenza</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -103,10 +103,13 @@
 
       const semiData = [];
 
-      // Limiti per wrap-around (puoi regolarli)
+      // Limiti di posizione per il "campo di volo"
       const limitX = 3;
       const limitY = 2.5;
       const limitZ = 3;
+
+      // Margine extra fuori dal limite per far "entrare" i semi da fuori
+      const margin = 1;
 
       for(let i = 1; i <= totalSemi; i++) {
         const angle = Math.random() * 2 * Math.PI;
@@ -138,14 +141,15 @@
 
         semiContainer.appendChild(img);
 
+        // Imposto velocità con segno casuale (positivo o negativo)
+        const vx = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
+        const vy = (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
+        const vz = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
+
         semiData.push({
           el: img,
           pos: { x: posX, y: posY, z: posZ },
-          velocity: {
-            x: (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-            y: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
-            z: (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-          },
+          velocity: { x: vx, y: vy, z: vz },
           baseScale: (0.7 + Math.random() * 0.6) * 2,
           aspectRatio: aspect,
           opacity: 1
@@ -155,20 +159,39 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function () {
           semiData.forEach(data => {
-            // Muovo posizione
             data.pos.x += data.velocity.x;
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Wrap-around con limiti
-            if(data.pos.x > limitX) data.pos.x = -limitX;
-            else if(data.pos.x < -limitX) data.pos.x = limitX;
+            // Se escono da limiti, li facciamo entrare da fuori con velocità verso il centro
 
-            if(data.pos.y > limitY) data.pos.y = 0;
-            else if(data.pos.y < 0) data.pos.y = limitY;
+            // X
+            if (data.pos.x > limitX + margin) {
+              data.pos.x = -limitX - margin;
+              // Assicuriamoci che velocità sia verso il centro (positivo x -> negativo velocità)
+              if (data.velocity.x > 0) data.velocity.x = -Math.abs(data.velocity.x);
+            } else if (data.pos.x < -limitX - margin) {
+              data.pos.x = limitX + margin;
+              if (data.velocity.x < 0) data.velocity.x = Math.abs(data.velocity.x);
+            }
 
-            if(data.pos.z > limitZ) data.pos.z = -limitZ;
-            else if(data.pos.z < -limitZ) data.pos.z = limitZ;
+            // Y
+            if (data.pos.y > limitY + margin) {
+              data.pos.y = 0 - margin;
+              if (data.velocity.y > 0) data.velocity.y = -Math.abs(data.velocity.y);
+            } else if (data.pos.y < 0 - margin) {
+              data.pos.y = limitY + margin;
+              if (data.velocity.y < 0) data.velocity.y = Math.abs(data.velocity.y);
+            }
+
+            // Z
+            if (data.pos.z > limitZ + margin) {
+              data.pos.z = -limitZ - margin;
+              if (data.velocity.z > 0) data.velocity.z = -Math.abs(data.velocity.z);
+            } else if (data.pos.z < -limitZ - margin) {
+              data.pos.z = limitZ + margin;
+              if (data.velocity.z < 0) data.velocity.z = Math.abs(data.velocity.z);
+            }
 
             // Scala basata sulla distanza z (profondità)
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
@@ -182,10 +205,8 @@
               data.opacity = 1;
             }
 
-            // Applico opacità al materiale
             data.el.setAttribute('material', `opacity: ${data.opacity}; alphaTest: 0.5; transparent: true`);
 
-            // Aggiorno posizione e scala solo se opacità > 0
             if (data.opacity > 0) {
               data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
               data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro 28 semi</title>
+    <title>Soffioni AR - marker Hiro 28 semi raddrizzati</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -94,10 +94,11 @@
           loop: true; 
           dir: alternate
         `);
+        // Rotazione solo sull'asse Y
         img.setAttribute('animation__rot', `
           property: rotation; 
           to: 0 360 0; 
-          dur: 6000; 
+          dur: 8000; 
           loop: true
         `);
 

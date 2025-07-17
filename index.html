@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti con ingresso/uscita solo fuori schermo</title>
+    <title>Soffioni volanti con trasparenza corretta</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -81,6 +81,7 @@
     </a-scene>
 
     <script>
+      // Attiva webcam come sfondo
       const video = document.getElementById('webcamVideo');
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -103,57 +104,56 @@
 
       const semiData = [];
 
+      // Limiti spazio 3D per wrap-around
       const limitX = 3;
-      const limitY = 2.5;
+      const limitY = 3;
       const limitZ = 3;
-      const margin = 0.5;
 
-      // Funzione per generare posizione iniziale fuori schermo, lungo un bordo a caso
-      function spawnOutside() {
-        const side = Math.floor(Math.random() * 6);
-        switch(side) {
-          case 0: return { x: -limitX - margin, y: Math.random() * limitY, z: (Math.random() * 2 - 1) * limitZ };
-          case 1: return { x: limitX + margin, y: Math.random() * limitY, z: (Math.random() * 2 - 1) * limitZ };
-          case 2: return { x: (Math.random() * 2 - 1) * limitX, y: -margin, z: (Math.random() * 2 - 1) * limitZ };
-          case 3: return { x: (Math.random() * 2 - 1) * limitX, y: limitY + margin, z: (Math.random() * 2 - 1) * limitZ };
-          case 4: return { x: (Math.random() * 2 - 1) * limitX, y: Math.random() * limitY, z: -limitZ - margin };
-          case 5: return { x: (Math.random() * 2 - 1) * limitX, y: Math.random() * limitY, z: limitZ + margin };
-        }
+      function randomOutsidePosition() {
+        // Genera posizione casuale fuori da un cubo -3..3 su x,y,z, cioè fuori da -2..2
+        // Per non far apparire semi al centro, posizioniamo solo fuori dal range -2..2 (più grande)
+        let x, y, z;
+        do {
+          x = (Math.random() * 2 * limitX) - limitX;
+          y = (Math.random() * 2 * limitY) - limitY;
+          z = (Math.random() * 2 * limitZ) - limitZ;
+        } while (Math.abs(x) < 2 && Math.abs(y) < 2 && Math.abs(z) < 2);
+        return { x, y, z };
       }
 
       for(let i = 1; i <= totalSemi; i++) {
-        const pos = spawnOutside();
+        const pos = randomOutsidePosition();
+
         const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
         img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'transparent: true');
-        img.setAttribute('scale', '1 1 1');
+        img.setAttribute('material', 'transparent: true; alphaTest: 0.5; depthTest: false');
+        img.setAttribute('scale', '1.8 1.8 1.8');
         img.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
 
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}';
           document.getElementById('nameLabel').style.display='block';
-          setTimeout(() => { document.getElementById('nameLabel').style.display='none'; }, 2000);
+          setTimeout(() => {
+            document.getElementById('nameLabel').style.display='none';
+          }, 2000);
         `);
 
         semiContainer.appendChild(img);
 
-        // Velocità diretta verso il centro (0, y medio, 0) con un po’ di variazione casuale
-        const direction = {
-          x: (Math.random() * 0.002 + 0.001) * (pos.x < 0 ? 1 : -1),
-          y: (Math.random() * 0.001 + 0.0005) * (pos.y < limitY/2 ? 1 : -1),
-          z: (Math.random() * 0.002 + 0.001) * (pos.z < 0 ? 1 : -1),
-        };
-
         semiData.push({
           el: img,
           pos: pos,
-          velocity: direction,
-          baseScale: (0.7 + Math.random() * 0.6) * 3,
-          aspectRatio: aspect
+          velocity: {
+            x: (Math.random() * 0.002 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
+            y: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
+            z: (Math.random() * 0.002 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
+          },
+          baseScale: 1.8,
+          aspectRatio: aspect,
         });
       }
 
@@ -164,26 +164,16 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Se esce dai limiti + margin, "respawna" fuori schermo da un bordo casuale
-            if (
-              data.pos.x < -limitX - margin || data.pos.x > limitX + margin ||
-              data.pos.y < 0 - margin || data.pos.y > limitY + margin ||
-              data.pos.z < -limitZ - margin || data.pos.z > limitZ + margin
-            ) {
-              const newPos = spawnOutside();
-              data.pos = newPos;
-              // Aggiorna la posizione dell’elemento
-              data.el.setAttribute('position', `${newPos.x} ${newPos.y} ${newPos.z}`);
+            // Wrap-around: se escono dallo schermo li facciamo riapparire fuori, non al centro
+            if (data.pos.x > limitX) data.pos.x = -limitX;
+            else if (data.pos.x < -limitX) data.pos.x = limitX;
 
-              // Ricalcola nuova velocità verso centro
-              data.velocity = {
-                x: (Math.random() * 0.002 + 0.001) * (newPos.x < 0 ? 1 : -1),
-                y: (Math.random() * 0.001 + 0.0005) * (newPos.y < limitY/2 ? 1 : -1),
-                z: (Math.random() * 0.002 + 0.001) * (newPos.z < 0 ? 1 : -1),
-              };
-            }
+            if (data.pos.y > limitY) data.pos.y = -limitY;
+            else if (data.pos.y < -limitY) data.pos.y = limitY;
 
-            // Scala proporzionale in base a z (distanza)
+            if (data.pos.z > limitZ) data.pos.z = -limitZ;
+            else if (data.pos.z < -limitZ) data.pos.z = limitZ;
+
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;

@@ -93,6 +93,7 @@
         img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
         img.setAttribute('scale', `${baseScale * aspect} ${baseScale} ${baseScale}`);
         img.setAttribute('rotation', '-90 0 0');
+        img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}'; 

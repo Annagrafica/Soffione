@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti da fuori schermo senza lampeggio</title>
+    <title>Soffioni volanti senza lampeggio</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -68,7 +68,7 @@
         <img id="soffione21" src="assets/soffione21.png" />
         <img id="soffione22" src="assets/soffione22.png" />
         <img id="soffione23" src="assets/soffione23.png" />
-        <img id="soffione24" src="soffione24.png" />
+        <img id="soffione24" src="assets/soffione24.png" />
         <img id="soffione25" src="assets/soffione25.png" />
         <img id="soffione26" src="assets/soffione26.png" />
         <img id="soffione27" src="assets/soffione27.png" />
@@ -139,7 +139,6 @@
 
         semiContainer.appendChild(img);
 
-        // Velocità casuale con direzione casuale
         const vx = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
         const vy = (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
         const vz = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
@@ -160,7 +159,7 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Wrap-around "da fuori" con ingresso fluido da fuori schermo
+            // Wrap-around "da fuori" con ingresso fluido
             if (data.pos.x > limitX + margin) {
               data.pos.x = -limitX - margin;
               if (data.velocity.x > 0) data.velocity.x = -Math.abs(data.velocity.x);
@@ -185,13 +184,20 @@
               if (data.velocity.z < 0) data.velocity.z = Math.abs(data.velocity.z);
             }
 
-            // Scala proporzionale a distanza Z
-            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+            // Calcolo scala limitata per evitare lampeggio
+            const minScale = 0.3;
+            const maxScale = data.baseScale;
+
+            let scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+            scaleFactor = Math.min(Math.max(scaleFactor, minScale / data.baseScale), 1);
+
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+            // Opacità sempre piena, niente lampeggio
+            data.el.setAttribute('material', 'opacity: 1; transparent: true; alphaTest: 0.5');
           });
         }
       });

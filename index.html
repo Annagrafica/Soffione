@@ -104,36 +104,36 @@
       const semiData = [];
 
       for (let i = 1; i <= 28; i++) {
-        const angle = Math.random() * 360;
-        const angleRad = angle * Math.PI / 180;
-        const distance = 1 + Math.random();
-        const yPos = Math.random();
+  const angle = Math.random() * 360;
+  const angleRad = angle * Math.PI / 180;
+  const distance = 4 + Math.random() * 6; // più distante e sparsi
+  const yPos = Math.random() * 3;          // altezza maggiore
 
-        const imgEl = document.getElementById(`soffione${i}`);
-        const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
+  const imgEl = document.getElementById(`soffione${i}`);
+  const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
-        const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
-        img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
+  const img = document.createElement('a-image');
+  img.setAttribute('src', `#soffione${i}`);
+  img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+  img.setAttribute('rotation', '0 0 0');
+  img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[i-1]}';
-          document.getElementById('nameLabel').style.display='block';
-          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
-        `);
+  img.setAttribute('onclick', `
+    document.getElementById('nameLabel').innerText='${names[i-1]}';
+    document.getElementById('nameLabel').style.display='block';
+    setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+  `);
 
-        semiContainer.appendChild(img);
+  semiContainer.appendChild(img);
 
-        semiData.push({
-          el: img,
-          basePos: { x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance },
-          floatSpeed: 0.2 + Math.random() * 0.3,
-          phase: Math.random() * Math.PI * 2,
-          baseScale: 0.9 + Math.random() * 0.8,
-          aspectRatio: aspect
-        });
+  semiData.push({
+    el: img,
+    basePos: { x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance },
+    floatSpeed: 0.2 + Math.random() * 0.3,
+    phase: Math.random() * Math.PI * 2,
+    baseScale: 0.9 + Math.random() * 0.8,
+    aspectRatio: aspect
+  });
       }
 
       AFRAME.registerComponent('semi-fluttuanti', {

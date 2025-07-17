@@ -4,10 +4,7 @@
     <title>Soffioni Volanti Webcam senza marker</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
-      body, html {
-        margin: 0; padding: 0; overflow: hidden; height: 100%;
-        background: black;
-      }
+      body { margin: 0; overflow: hidden; }
       #webcamVideo {
         position: fixed;
         top: 0; left: 0;
@@ -23,11 +20,26 @@
         z-index: 1;
         pointer-events: none;
       }
+      #nameLabel {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-family: sans-serif;
+        font-size: 18px;
+        display: none;
+        pointer-events: none;
+        user-select: none;
+        z-index: 1000;
+      }
     </style>
   </head>
   <body>
 
-    <!-- Webcam video come sfondo -->
+    <div id="nameLabel"></div>
     <video id="webcamVideo" autoplay playsinline muted></video>
 
     <a-scene embedded>
@@ -48,7 +60,7 @@
         <img id="soffione13" src="assets/soffione13.png" />
         <img id="soffione14" src="assets/soffione14.png" />
         <img id="soffione15" src="assets/soffione15.png" />
-        <img id="soffione16" src="soffione16.png" />
+        <img id="soffione16" src="assets/soffione16.png" />
         <img id="soffione17" src="assets/soffione17.png" />
         <img id="soffione18" src="assets/soffione18.png" />
         <img id="soffione19" src="assets/soffione19.png" />
@@ -64,10 +76,12 @@
       </a-assets>
 
       <a-entity id="semiContainer"></a-entity>
+
       <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
 
     <script>
+      // Attiva webcam come sfondo
       const video = document.getElementById('webcamVideo');
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -79,6 +93,14 @@
         });
 
       const semiContainer = document.querySelector('#semiContainer');
+      const names = [
+        "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
+        "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
+        "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
+        "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
+        "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
+      ];
+
       const semiData = [];
 
       for (let i = 1; i <= 28; i++) {
@@ -95,6 +117,12 @@
         img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
+
+        img.setAttribute('onclick', `
+          document.getElementById('nameLabel').innerText='${names[i-1]}';
+          document.getElementById('nameLabel').style.display='block';
+          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+        `);
 
         semiContainer.appendChild(img);
 

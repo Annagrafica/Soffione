@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti da fuori schermo con dissolvenza</title>
+    <title>Soffioni volanti da fuori schermo senza lampeggio</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -103,12 +103,10 @@
 
       const semiData = [];
 
-      // Limiti di posizione per il "campo di volo"
+      // Limiti di posizione per il campo di volo
       const limitX = 3;
       const limitY = 2.5;
       const limitZ = 3;
-
-      // Margine extra fuori dal limite per far "entrare" i semi da fuori
       const margin = 1;
 
       for(let i = 1; i <= totalSemi; i++) {
@@ -141,7 +139,7 @@
 
         semiContainer.appendChild(img);
 
-        // Imposto velocità con segno casuale (positivo o negativo)
+        // Velocità casuale con direzione casuale
         const vx = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
         const vy = (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
         const vz = (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1);
@@ -151,8 +149,7 @@
           pos: { x: posX, y: posY, z: posZ },
           velocity: { x: vx, y: vy, z: vz },
           baseScale: (0.7 + Math.random() * 0.6) * 2,
-          aspectRatio: aspect,
-          opacity: 1
+          aspectRatio: aspect
         });
       }
 
@@ -163,19 +160,15 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Se escono da limiti, li facciamo entrare da fuori con velocità verso il centro
-
-            // X
+            // Wrap-around "da fuori" con ingresso fluido da fuori schermo
             if (data.pos.x > limitX + margin) {
               data.pos.x = -limitX - margin;
-              // Assicuriamoci che velocità sia verso il centro (positivo x -> negativo velocità)
               if (data.velocity.x > 0) data.velocity.x = -Math.abs(data.velocity.x);
             } else if (data.pos.x < -limitX - margin) {
               data.pos.x = limitX + margin;
               if (data.velocity.x < 0) data.velocity.x = Math.abs(data.velocity.x);
             }
 
-            // Y
             if (data.pos.y > limitY + margin) {
               data.pos.y = 0 - margin;
               if (data.velocity.y > 0) data.velocity.y = -Math.abs(data.velocity.y);
@@ -184,7 +177,6 @@
               if (data.velocity.y < 0) data.velocity.y = Math.abs(data.velocity.y);
             }
 
-            // Z
             if (data.pos.z > limitZ + margin) {
               data.pos.z = -limitZ - margin;
               if (data.velocity.z > 0) data.velocity.z = -Math.abs(data.velocity.z);
@@ -193,24 +185,13 @@
               if (data.velocity.z < 0) data.velocity.z = Math.abs(data.velocity.z);
             }
 
-            // Scala basata sulla distanza z (profondità)
+            // Scala proporzionale a distanza Z
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            // Dissolvenza: opacità cala se molto piccoli o lontani
-            if (adjustedScaleY < 0.15) {
-              data.opacity = Math.max(0, (adjustedScaleY - 0.05) / 0.1);
-            } else {
-              data.opacity = 1;
-            }
-
-            data.el.setAttribute('material', `opacity: ${data.opacity}; alphaTest: 0.5; transparent: true`);
-
-            if (data.opacity > 0) {
-              data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-              data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-            }
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
         }
       });

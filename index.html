@@ -171,9 +171,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: dirX || (Math.random() - 0.15) * 0.002,
-            y: dirY || (Math.random() - 0.15) * 0.002,
-            z: dirZ || (Math.random() - 0.15) * 0.002,
+            x: dirX || (Math.random() - 0.015) * 0.002,
+            y: dirY || (Math.random() - 0.015) * 0.002,
+            z: dirZ || (Math.random() - 0.015) * 0.002,
           },
           baseScale: 2.5 + Math.random() * 1.5,
           aspectRatio: aspect,
@@ -211,7 +211,7 @@
             data.pos.z += data.velocity.z;
 
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.2);
+const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);

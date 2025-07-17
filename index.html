@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti senza lampeggio</title>
+    <title>Soffioni volanti con ingresso/uscita solo fuori schermo</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -103,50 +103,55 @@
 
       const semiData = [];
 
-      // Limiti di posizione per il campo di volo
       const limitX = 3;
       const limitY = 2.5;
       const limitZ = 3;
-      const margin = 1;
+      const margin = 0.5;
+
+      // Funzione per generare posizione iniziale fuori schermo, lungo un bordo a caso
+      function spawnOutside() {
+        const side = Math.floor(Math.random() * 6);
+        switch(side) {
+          case 0: return { x: -limitX - margin, y: Math.random() * limitY, z: (Math.random() * 2 - 1) * limitZ };
+          case 1: return { x: limitX + margin, y: Math.random() * limitY, z: (Math.random() * 2 - 1) * limitZ };
+          case 2: return { x: (Math.random() * 2 - 1) * limitX, y: -margin, z: (Math.random() * 2 - 1) * limitZ };
+          case 3: return { x: (Math.random() * 2 - 1) * limitX, y: limitY + margin, z: (Math.random() * 2 - 1) * limitZ };
+          case 4: return { x: (Math.random() * 2 - 1) * limitX, y: Math.random() * limitY, z: -limitZ - margin };
+          case 5: return { x: (Math.random() * 2 - 1) * limitX, y: Math.random() * limitY, z: limitZ + margin };
+        }
+      }
 
       for(let i = 1; i <= totalSemi; i++) {
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = 1 + Math.random() * 2;
-        const yPos = Math.random() * 2;
-
+        const pos = spawnOutside();
         const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
 
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
         img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'transparent: true; depthTest: false; depthWrite: false; opacity: 1');
+        img.setAttribute('material', 'transparent: true');
         img.setAttribute('scale', '1 1 1');
-
-        const posX = Math.cos(angle) * distance;
-        const posY = yPos;
-        const posZ = -Math.sin(angle) * distance;
-
-        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
+        img.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
 
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}';
           document.getElementById('nameLabel').style.display='block';
-          setTimeout(() => {
-            document.getElementById('nameLabel').style.display='none';
-          }, 2000);
+          setTimeout(() => { document.getElementById('nameLabel').style.display='none'; }, 2000);
         `);
 
         semiContainer.appendChild(img);
 
-        const vx = (Math.random() * 0.002 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
-        const vy = (Math.random() * 0.001 + 0.0003) * (Math.random() < 0.5 ? 1 : -1);
-        const vz = (Math.random() * 0.002 + 0.0005) * (Math.random() < 0.5 ? 1 : -1);
+        // Velocità diretta verso il centro (0, y medio, 0) con un po’ di variazione casuale
+        const direction = {
+          x: (Math.random() * 0.002 + 0.001) * (pos.x < 0 ? 1 : -1),
+          y: (Math.random() * 0.001 + 0.0005) * (pos.y < limitY/2 ? 1 : -1),
+          z: (Math.random() * 0.002 + 0.001) * (pos.z < 0 ? 1 : -1),
+        };
 
         semiData.push({
           el: img,
-          pos: { x: posX, y: posY, z: posZ },
-          velocity: { x: vx, y: vy, z: vz },
+          pos: pos,
+          velocity: direction,
           baseScale: (0.7 + Math.random() * 0.6) * 3,
           aspectRatio: aspect
         });
@@ -159,36 +164,27 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Wrap-around "da fuori" con ingresso fluido
-            if (data.pos.x > limitX + margin) {
-              data.pos.x = -limitX - margin;
-              if (data.velocity.x > 0) data.velocity.x = -Math.abs(data.velocity.x);
-            } else if (data.pos.x < -limitX - margin) {
-              data.pos.x = limitX + margin;
-              if (data.velocity.x < 0) data.velocity.x = Math.abs(data.velocity.x);
+            // Se esce dai limiti + margin, "respawna" fuori schermo da un bordo casuale
+            if (
+              data.pos.x < -limitX - margin || data.pos.x > limitX + margin ||
+              data.pos.y < 0 - margin || data.pos.y > limitY + margin ||
+              data.pos.z < -limitZ - margin || data.pos.z > limitZ + margin
+            ) {
+              const newPos = spawnOutside();
+              data.pos = newPos;
+              // Aggiorna la posizione dell’elemento
+              data.el.setAttribute('position', `${newPos.x} ${newPos.y} ${newPos.z}`);
+
+              // Ricalcola nuova velocità verso centro
+              data.velocity = {
+                x: (Math.random() * 0.002 + 0.001) * (newPos.x < 0 ? 1 : -1),
+                y: (Math.random() * 0.001 + 0.0005) * (newPos.y < limitY/2 ? 1 : -1),
+                z: (Math.random() * 0.002 + 0.001) * (newPos.z < 0 ? 1 : -1),
+              };
             }
 
-            if (data.pos.y > limitY + margin) {
-              data.pos.y = 0 - margin;
-              if (data.velocity.y > 0) data.velocity.y = -Math.abs(data.velocity.y);
-            } else if (data.pos.y < 0 - margin) {
-              data.pos.y = limitY + margin;
-              if (data.velocity.y < 0) data.velocity.y = Math.abs(data.velocity.y);
-            }
-
-            if (data.pos.z > limitZ + margin) {
-              data.pos.z = -limitZ - margin;
-              if (data.velocity.z > 0) data.velocity.z = -Math.abs(data.velocity.z);
-            } else if (data.pos.z < -limitZ - margin) {
-              data.pos.z = limitZ + margin;
-              if (data.velocity.z < 0) data.velocity.z = Math.abs(data.velocity.z);
-            }
-
-            // Calcolo scala limitata per evitare lampeggio
-            const minScale = 0.4;
-            let scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-            scaleFactor = Math.min(Math.max(scaleFactor, minScale / data.baseScale), 1);
-
+            // Scala proporzionale in base a z (distanza)
+            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 

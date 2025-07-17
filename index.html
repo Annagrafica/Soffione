@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - marker Hiro con click corretto</title>
+    <title>Soffioni AR - marker Hiro con nomi corretti</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <style>
@@ -11,7 +11,7 @@
         top: 10px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.85);
         padding: 10px 20px;
         border-radius: 10px;
         font-family: sans-serif;
@@ -97,6 +97,7 @@
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
         img.setAttribute('class', 'clickable');
+        img.setAttribute('data-nome', names[i - 1]); // associazione diretta del nome
 
         semiContainer.appendChild(img);
 
@@ -136,20 +137,17 @@
 
       semiContainer.setAttribute('semi-fluttuanti', '');
 
-      // Mostra nome quando clicchi
+      // Mostra nome corretto al click
       document.querySelector('a-scene').addEventListener('click', (evt) => {
         const intersected = evt.target;
         if (intersected.classList && intersected.classList.contains('clickable')) {
-          const index = Array.from(semiContainer.children).indexOf(intersected);
-          if (index !== -1) {
-            const name = names[index];
-            const label = document.getElementById('nameLabel');
-            label.innerText = name;
-            label.style.display = 'block';
-            setTimeout(() => {
-              label.style.display = 'none';
-            }, 2000);
-          }
+          const name = intersected.getAttribute('data-nome');
+          const label = document.getElementById('nameLabel');
+          label.innerText = name;
+          label.style.display = 'block';
+          setTimeout(() => {
+            label.style.display = 'none';
+          }, 2000);
         }
       });
     </script>

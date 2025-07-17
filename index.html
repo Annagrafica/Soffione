@@ -1,22 +1,45 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni Volanti - Sfondo trasparente</title>
+    <title>Soffioni Volanti - Webcam senza Marker</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; background: transparent; }
-      html, body, canvas { touch-action: none; }
+      body { margin: 0; overflow: hidden; }
     </style>
   </head>
   <body>
-    <a-scene vr-mode-ui="enabled: false" embedded renderer="alpha: true">
+    <a-scene>
+      <!-- Sfondo webcam -->
+      <a-assets>
+        <video id="webcam" autoplay playsinline width="640" height="480"></video>
+      </a-assets>
+      <a-plane 
+        position="0 1.6 -3" 
+        rotation="0 0 0" 
+        width="16" 
+        height="9" 
+        material="shader: flat; src: #webcam">
+      </a-plane>
+
       <!-- Semi volanti -->
       <a-entity id="semiContainer"></a-entity>
 
-      <a-entity camera position="0 1.6 0"></a-entity>
+      <a-entity camera></a-entity>
     </a-scene>
 
     <script>
+      // Attiva la webcam come sfondo
+      const video = document.querySelector("#webcam");
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          video.play();
+        })
+        .catch(err => {
+          console.error("Errore accesso webcam:", err);
+        });
+
+      // Crea semi
       const semiContainer = document.querySelector('#semiContainer');
       const semiData = [];
 
@@ -42,7 +65,7 @@
         });
       }
 
-      // Movimento soffioni
+      // Movimento
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           semiData.forEach(data => {

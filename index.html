@@ -127,10 +127,11 @@
 
             // Scala proporzionale alla profondità (più vicino = più grande)
             const scaleFactor = 1 / (1 + Math.abs(newZ)); // più lontano → più piccolo
-            const adjustedScale = data.baseScale * scaleFactor;
-
+            const aspect = data.aspectRatio;
+const adjustedScaleY = data.baseScale * scaleFactor;
+const adjustedScaleX = adjustedScaleY * aspect;
+data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-            data.el.setAttribute('scale', `${adjustedScale} ${adjustedScale} ${adjustedScale}`);
           });
         }
       });

@@ -25,10 +25,7 @@
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       <a-assets>
-        <!-- Marker pattern -->
-        <a-marker preset="custom" type="pattern" url="assets/pattern-soffione.patt"></a-marker>
-
-        <!-- Images of seeds -->
+        <!-- Caricamento immagini semi -->
         <img id="soffione1" src="assets/soffione1.png">
         <img id="soffione2" src="assets/soffione2.png">
         <img id="soffione3" src="assets/soffione3.png">
@@ -59,6 +56,7 @@
         <img id="soffione28" src="assets/soffione28.png">
       </a-assets>
 
+      <!-- Marker -->
       <a-marker type="pattern" url="assets/pattern-soffione.patt">
         <a-entity id="semiContainer"></a-entity>
       </a-marker>
@@ -78,16 +76,35 @@
 
       for (let i = 1; i <= 28; i++) {
         const angle = Math.random() * 360;
-        const distance = 1 + Math.random() * 2;
+        const angleRad = angle * Math.PI / 180; // conversione in radianti
+        const nextAngleRad = (angle + 30) * Math.PI / 180; // movimento più visibile
+        const distance = 1 + Math.random() * 1.5;
         const yPos = Math.random() * 1.5;
 
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angle) * distance} ${yPos} ${-Math.sin(angle) * distance}`);
-        img.setAttribute('scale', '0.5 0.5 0.5');
-        img.setAttribute('animation', `property: position; to: ${Math.cos(angle + 1)} ${yPos + 0.5} ${-Math.sin(angle + 1)}; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate`);
-        img.setAttribute('animation__rot', 'property: rotation; to: 0 360 0; dur: 8000; loop: true');
-        img.setAttribute('onclick', `document.getElementById('nameLabel').innerText='${names[i-1]}'; document.getElementById('nameLabel').style.display='block'; setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)`);
+        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+        img.setAttribute('scale', '0.4 0.4 0.4');
+        img.setAttribute('animation', `
+          property: position; 
+          to: ${Math.cos(nextAngleRad) * distance} ${yPos + 0.5} ${-Math.sin(nextAngleRad) * distance}; 
+          dur: 3000; 
+          easing: easeInOutSine; 
+          loop: true; 
+          dir: alternate
+        `);
+        img.setAttribute('animation__rot', `
+          property: rotation; 
+          to: 0 360 0; 
+          dur: 6000; 
+          loop: true
+        `);
+
+        img.setAttribute('onclick', `
+          document.getElementById('nameLabel').innerText='${names[i-1]}'; 
+          document.getElementById('nameLabel').style.display='block'; 
+          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+        `);
 
         semiContainer.appendChild(img);
       }

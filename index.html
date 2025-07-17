@@ -204,9 +204,9 @@ velocity: {
 
 AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 1000; // converti in secondi
+    const dt = timeDelta / 800; // converti in secondi
 
-    const speedMultiplier = 20; // qui puoi aumentare o diminuire la velocità globale
+    const speedMultiplier = 15; // qui puoi aumentare o diminuire la velocità globale
 
     activeSemi.forEach(index => {
       const data = semiData[index];

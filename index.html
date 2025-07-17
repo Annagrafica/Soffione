@@ -1,39 +1,24 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Test Webcam Video su Piano A-Frame</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <style>body, html { margin: 0; height: 100%; overflow: hidden; }</style>
+<meta charset="UTF-8" />
+<title>Test Webcam semplice</title>
+<style>
+  body, html { margin:0; height: 100%; background: #333; display: flex; justify-content: center; align-items: center;}
+  video { width: 640px; height: 480px; background: black; }
+</style>
 </head>
 <body>
-  <a-scene embedded>
-    <a-assets>
-      <video id="webcamVideo" autoplay playsinline muted></video>
-    </a-assets>
+  <video id="video" autoplay playsinline></video>
 
-    <a-plane id="videoPlane" position="0 1.6 -4" width="16" height="9" material="shader: flat;"></a-plane>
-
-    <a-entity camera position="0 1.6 0"></a-entity>
-  </a-scene>
-
-<script>
-  const video = document.getElementById('webcamVideo');
-  const videoPlane = document.getElementById('videoPlane');
-
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      video.srcObject = stream;
-      video.play();
-      video.onloadeddata = () => {
-        console.log("Webcam video pronto");
-        videoPlane.setAttribute('material', 'shader: flat; src: #webcamVideo');
-      };
-    })
-    .catch(err => {
-      alert("Errore accesso webcam: " + err.message);
-      console.error(err);
-    });
-</script>
+  <script>
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(e => alert('Errore accesso webcam: ' + e.message));
+  </script>
 </body>
 </html>

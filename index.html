@@ -202,27 +202,30 @@ velocity: {
 
       setInterval(spawnSemi, 500); // nuovo seme ogni secondo circa
 
-      AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function () {
-          activeSemi.forEach(index => {
-            const data = semiData[index];
-            data.pos.x += data.velocity.x;
-            data.pos.y += data.velocity.y;
-            data.pos.z += data.velocity.z;
+AFRAME.registerComponent('semi-fluttuanti', {
+  tick: function (time, timeDelta) {
+    // timeDelta è in ms, converti in secondi per velocità più naturale
+    const dt = timeDelta / 1000; 
 
-            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+    activeSemi.forEach(index => {
+      const data = semiData[index];
+      data.pos.x += data.velocity.x * dt;
+      data.pos.y += data.velocity.y * dt;
+      data.pos.z += data.velocity.z * dt;
 
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-const exitMargin = 1.5; // margine più grande
-if (Math.abs(data.pos.x) > limitX + exitMargin || Math.abs(data.pos.y) > limitY + exitMargin || Math.abs(data.pos.z) > limitZ + exitMargin) {
-  removeSeme(index);
-}
-          });
-        }
-      });
+      const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+      const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
+      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+
+      if (Math.abs(data.pos.x) > limitX + 1.5 || Math.abs(data.pos.y) > limitY + 1.5 || Math.abs(data.pos.z) > limitZ + 1.5) {
+        removeSeme(index);
+      }
+    });
+  }
+});
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

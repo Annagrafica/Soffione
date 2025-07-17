@@ -191,15 +191,26 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-            const adjustedScaleY = Math.min(data.baseScale * scaleFactor, data.baseScale * 1.1);
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+              // Blocca la scala massima per evitare semi giganti
+        const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
+        const adjustedScaleY = Math.min(
+          data.baseScale * scaleFactor,
+          data.baseScale * 1.1, // Scala massima
+          3 * scaleMultiplier // Limite massimo assoluto
+        );
+        const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+        data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+        data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-            if (Math.abs(data.pos.x) > limitX + 1.5 || Math.abs(data.pos.y) > limitY + 1.5 || Math.abs(data.pos.z) > limitZ + 1.5) {
-              removeSeme(index);
+        // Se troppo vicino alla camera o fuori dai limiti, rimuovi
+        if (
+          Math.abs(data.pos.x) > limitX + 1.5 ||
+          Math.abs(data.pos.y) > limitY + 1.5 ||
+          Math.abs(data.pos.z) > limitZ + 1.5 ||
+          data.pos.z < 0.5 // Troppo vicino: rigenera
+        ) {
+          removeSeme(index);
             }
           });
         }

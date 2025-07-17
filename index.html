@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni Volanti Webcam senza marker</title>
+    <title>Soffioni volanti alternati</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -77,10 +77,11 @@
 
       <a-entity id="semiContainer"></a-entity>
 
-      <a-entity camera position="0 1.6 2" rotation="0 180 0"></a-entity>
+      <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
 
     <script>
+      // Attiva webcam come sfondo
       const video = document.getElementById('webcamVideo');
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -92,6 +93,11 @@
         });
 
       const semiContainer = document.querySelector('#semiContainer');
+      const totalSemi = 28;
+      const floatCount = 6; // quanti semi volano contemporaneamente
+      const floatDuration = 3000; // ogni 3 secondi cambio semi volanti
+
+      const semiData = [];
       const names = [
         "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
         "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
@@ -100,15 +106,10 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-      const semiData = [];
-
-      for (let i = 1; i <= 28; i++) {
-        const angle = Math.random() * 360;
-        const angleRad = angle * Math.PI / 180;
-
-        // distanza da 0.5 a 2 (vicini alla camera)
-        const distance = 0.5 + Math.random() * 1.5;
-        // y da 0 a 2
+      // Creo tutti i semi, posizioni e dati
+      for(let i = 1; i <= totalSemi; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 1 + Math.random() * 2; // distanza più ampia
         const yPos = Math.random() * 2;
 
         const imgEl = document.getElementById(`soffione${i}`);
@@ -116,46 +117,74 @@
 
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${Math.sin(angleRad) * distance}`);
+        img.setAttribute('position', `${Math.cos(angle) * distance} ${yPos} ${-Math.sin(angle) * distance}`);
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[i-1]}';
           document.getElementById('nameLabel').style.display='block';
-          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+          setTimeout(() => {
+            document.getElementById('nameLabel').style.display='none';
+          }, 2000);
         `);
 
         semiContainer.appendChild(img);
 
         semiData.push({
           el: img,
-          basePos: { x: Math.cos(angleRad) * distance, y: yPos, z: Math.sin(angleRad) * distance },
-          floatSpeed: 0.3 + Math.random() * 0.4,
+          basePos: { x: Math.cos(angle) * distance, y: yPos, z: -Math.sin(angle) * distance },
+          floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
-          baseScale: 1.5 + Math.random() * 1.0,
+          baseScale: 0.7 + Math.random() * 0.6,
           aspectRatio: aspect
         });
       }
 
+      // Array che contiene gli indici dei semi che attualmente "volano"
+      let floatingIndices = [];
+
+      // Funzione per cambiare casualmente i semi volanti
+      function changeFloating() {
+        floatingIndices = [];
+        const indices = [...Array(totalSemi).keys()]; // 0..27
+        // Mischia l'array e prendi i primi floatCount elementi
+        for(let i = indices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        floatingIndices = indices.slice(0, floatCount);
+      }
+
+      changeFloating();
+      setInterval(changeFloating, floatDuration);
+
+      // Componente AFRAME per animare solo i semi selezionati
       AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time) {
+        tick: function(time) {
           const t = time / 1000;
-          semiData.forEach(data => {
-            const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.3;
-            const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.1;
-            const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.4;
+          semiData.forEach((data, idx) => {
+            if(floatingIndices.includes(idx)) {
+              // semi che volano con movimento fluido
+              const offsetX = Math.sin(t * data.floatSpeed + data.phase) * 0.2;
+              const offsetY = Math.sin(t * (data.floatSpeed / 2) + data.phase) * 0.05;
+              const offsetZ = Math.cos(t * data.floatSpeed + data.phase) * 0.3;
 
-            const newX = data.basePos.x + offsetX;
-            const newY = data.basePos.y + offsetY;
-            const newZ = data.basePos.z + offsetZ;
+              const newX = data.basePos.x + offsetX;
+              const newY = data.basePos.y + offsetY;
+              const newZ = data.basePos.z + offsetZ;
 
-            const scaleFactor = 1 / (1 + Math.abs(newZ));
-            const adjustedScaleY = data.baseScale * scaleFactor;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+              const scaleFactor = 1 / (1 + Math.abs(newZ));
+              const adjustedScaleY = data.baseScale * scaleFactor;
+              const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+              data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
+              data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+            } else {
+              // semi fermi: posizione base e scala base
+              data.el.setAttribute('position', `${data.basePos.x} ${data.basePos.y} ${data.basePos.z}`);
+              data.el.setAttribute('scale', `${data.baseScale * data.aspectRatio} ${data.baseScale} ${data.baseScale}`);
+            }
           });
         }
       });

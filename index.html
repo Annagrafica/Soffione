@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni AR - senza marker con profondità realistica</title>
+    <title>Soffioni - senza marker, fotocamera attiva</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -25,7 +25,7 @@
   <body>
     <div id="nameLabel"></div>
 
-    <a-scene embedded vr-mode-ui="enabled: false">
+    <a-scene embedded vr-mode-ui="enabled: false" background="color: transparent">
       <a-assets>
         <!-- 28 immagini soffione -->
         <img id="soffione1" src="assets/soffione1.png" />
@@ -58,6 +58,7 @@
         <img id="soffione28" src="assets/soffione28.png" />
       </a-assets>
 
+      <!-- Camera con sfondo trasparente -->
       <a-entity camera></a-entity>
       <a-entity id="semiContainer"></a-entity>
     </a-scene>

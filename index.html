@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti con trasparenza corretta</title>
+    <title>Soffioni volanti con apparizione solo da fuori schermo</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -81,7 +81,6 @@
     </a-scene>
 
     <script>
-      // Attiva webcam come sfondo
       const video = document.getElementById('webcamVideo');
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -102,16 +101,13 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-      const semiData = [];
-
-      // Limiti spazio 3D per wrap-around
+      // Limiti spazio 3D in coordinate A-Frame
       const limitX = 3;
       const limitY = 3;
       const limitZ = 3;
 
       function randomOutsidePosition() {
-        // Genera posizione casuale fuori da un cubo -3..3 su x,y,z, cioè fuori da -2..2
-        // Per non far apparire semi al centro, posizioniamo solo fuori dal range -2..2 (più grande)
+        // Posizione generata sempre fuori dal cubo centrale (-2..2)
         let x, y, z;
         do {
           x = (Math.random() * 2 * limitX) - limitX;
@@ -120,6 +116,16 @@
         } while (Math.abs(x) < 2 && Math.abs(y) < 2 && Math.abs(z) < 2);
         return { x, y, z };
       }
+
+      function randomVelocity() {
+        return {
+          x: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
+          y: (Math.random() * 0.00075 + 0.00025) * (Math.random() < 0.5 ? 1 : -1),
+          z: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
+        };
+      }
+
+      const semiData = [];
 
       for(let i = 1; i <= totalSemi; i++) {
         const pos = randomOutsidePosition();
@@ -147,11 +153,7 @@
         semiData.push({
           el: img,
           pos: pos,
-          velocity: {
-            x: (Math.random() * 0.002 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-            y: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
-            z: (Math.random() * 0.002 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-          },
+          velocity: randomVelocity(),
           baseScale: 1.8,
           aspectRatio: aspect,
         });
@@ -164,16 +166,23 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Wrap-around: se escono dallo schermo li facciamo riapparire fuori, non al centro
-            if (data.pos.x > limitX) data.pos.x = -limitX;
-            else if (data.pos.x < -limitX) data.pos.x = limitX;
+            // Controllo se il seme è uscito dai limiti esterni
+            const outsideX = data.pos.x > limitX || data.pos.x < -limitX;
+            const outsideY = data.pos.y > limitY || data.pos.y < -limitY;
+            const outsideZ = data.pos.z > limitZ || data.pos.z < -limitZ;
 
-            if (data.pos.y > limitY) data.pos.y = -limitY;
-            else if (data.pos.y < -limitY) data.pos.y = limitY;
+            if (outsideX || outsideY || outsideZ) {
+              // Se è uscito, riassegno posizione sempre fuori dallo schermo (mai al centro)
+              const newPos = randomOutsidePosition();
+              data.pos.x = newPos.x;
+              data.pos.y = newPos.y;
+              data.pos.z = newPos.z;
 
-            if (data.pos.z > limitZ) data.pos.z = -limitZ;
-            else if (data.pos.z < -limitZ) data.pos.z = limitZ;
+              // Nuova velocità random per nuovo "volo"
+              data.velocity = randomVelocity();
+            }
 
+            // Scala basata su distanza Z per profondità
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;

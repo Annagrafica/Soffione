@@ -26,12 +26,13 @@
     <div id="nameLabel"></div>
 
     <a-scene
-      embedded
       vr-mode-ui="enabled: false"
+      embedded
       renderer="colorManagement: true;"
+      background="color: black"
     >
       <a-assets>
-        <!-- 28 immagini soffione -->
+        <!-- immagini soffioni -->
         <img id="soffione1" src="assets/soffione1.png" />
         <img id="soffione2" src="assets/soffione2.png" />
         <img id="soffione3" src="assets/soffione3.png" />
@@ -62,8 +63,8 @@
         <img id="soffione28" src="assets/soffione28.png" />
       </a-assets>
 
-      <!-- Camera che usa subito la webcam -->
-      <a-entity camera look-controls></a-entity>
+      <!-- camera -->
+      <a-entity camera look-controls wasd-controls></a-entity>
       <a-entity id="semiContainer"></a-entity>
     </a-scene>
 
@@ -82,8 +83,8 @@
       for (let i = 1; i <= 28; i++) {
         const angle = Math.random() * 360;
         const angleRad = angle * Math.PI / 180;
-        const distance = 1 + Math.random() * 1.0;
-        const yPos = Math.random() * 1.0;
+        const distance = 1 + Math.random() * 1.5;
+        const yPos = Math.random() * 1.5;
 
         const imgEl = document.getElementById(`soffione${i}`);
         const aspect = imgEl.naturalWidth / imgEl.naturalHeight;

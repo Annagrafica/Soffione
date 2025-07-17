@@ -2,12 +2,17 @@
 <html>
 <head>
   <title>Test Webcam Base</title>
+  <style>
+    body { margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background:#eee; }
+    video { border: 2px solid #333; }
+  </style>
 </head>
 <body>
-  <video id="video" autoplay playsinline width="640" height="480" style="border:1px solid black;"></video>
+  <video id="video" autoplay playsinline width="640" height="480"></video>
+
   <script>
     const video = document.getElementById('video');
-    navigator.mediaDevices.getUserMedia({video: true})
+    navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         video.srcObject = stream;
         video.play();

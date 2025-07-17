@@ -8,65 +8,52 @@
     </style>
   </head>
   <body>
-    <a-scene embedded>
+    <a-scene>
+      <!-- Sfondo webcam -->
       <a-assets>
-        <!-- 28 immagini soffione -->
-        <img id="soffione1" src="assets/soffione1.png" />
-        <img id="soffione2" src="assets/soffione2.png" />
-        <img id="soffione3" src="assets/soffione3.png" />
-        <img id="soffione4" src="assets/soffione4.png" />
-        <img id="soffione5" src="assets/soffione5.png" />
-        <img id="soffione6" src="assets/soffione6.png" />
-        <img id="soffione7" src="assets/soffione7.png" />
-        <img id="soffione8" src="assets/soffione8.png" />
-        <img id="soffione9" src="assets/soffione9.png" />
-        <img id="soffione10" src="assets/soffione10.png" />
-        <img id="soffione11" src="assets/soffione11.png" />
-        <img id="soffione12" src="assets/soffione12.png" />
-        <img id="soffione13" src="assets/soffione13.png" />
-        <img id="soffione14" src="assets/soffione14.png" />
-        <img id="soffione15" src="assets/soffione15.png" />
-        <img id="soffione16" src="assets/soffione16.png" />
-        <img id="soffione17" src="assets/soffione17.png" />
-        <img id="soffione18" src="assets/soffione18.png" />
-        <img id="soffione19" src="assets/soffione19.png" />
-        <img id="soffione20" src="assets/soffione20.png" />
-        <img id="soffione21" src="assets/soffione21.png" />
-        <img id="soffione22" src="assets/soffione22.png" />
-        <img id="soffione23" src="assets/soffione23.png" />
-        <img id="soffione24" src="assets/soffione24.png" />
-        <img id="soffione25" src="assets/soffione25.png" />
-        <img id="soffione26" src="assets/soffione26.png" />
-        <img id="soffione27" src="assets/soffione27.png" />
-        <img id="soffione28" src="assets/soffione28.png" />
+        <video id="webcam" autoplay playsinline width="640" height="480"></video>
       </a-assets>
+      <a-plane 
+        position="0 1.6 -3" 
+        rotation="0 0 0" 
+        width="16" 
+        height="9" 
+        material="shader: flat; src: #webcam">
+      </a-plane>
 
-      <!-- Aggiungi un cielo per il background -->
-      <a-sky color="#DDFFEE"></a-sky>
-
+      <!-- Semi volanti -->
       <a-entity id="semiContainer"></a-entity>
+
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
+      // Attiva la webcam come sfondo
+      const video = document.querySelector("#webcam");
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          video.play();
+        })
+        .catch(err => {
+          console.error("Errore accesso webcam:", err);
+        });
+
+      // Crea semi
       const semiContainer = document.querySelector('#semiContainer');
       const semiData = [];
 
       for (let i = 1; i <= 28; i++) {
         const angle = Math.random() * 360;
         const angleRad = angle * Math.PI / 180;
-        const distance = 1 + Math.random() * 1.0;
-        const yPos = Math.random() * 1.0;
-
-        const imgEl = document.getElementById(`soffione${i}`);
-        const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
+        const distance = 1.5 + Math.random() * 1.0;
+        const yPos = Math.random() * 1.5;
 
         const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${i}`);
+        img.setAttribute('src', `assets/soffione${i}.png`);
         img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
         img.setAttribute('rotation', '-90 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-
         semiContainer.appendChild(img);
 
         semiData.push({
@@ -74,12 +61,11 @@
           basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
           floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
-          baseScale: 0.7 + Math.random() * 0.6,
-          aspectRatio: aspect
+          baseScale: 0.7 + Math.random() * 0.6
         });
       }
 
-      // Movimento e scala proporzionale
+      // Movimento
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           semiData.forEach(data => {
@@ -94,11 +80,10 @@
             const newZ = data.basePos.z + offsetZ;
 
             const scaleFactor = 1 / (1 + Math.abs(newZ));
-            const adjustedScaleY = data.baseScale * scaleFactor;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+            const adjustedScale = data.baseScale * scaleFactor;
 
             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+            data.el.setAttribute('scale', `${adjustedScale} ${adjustedScale} ${adjustedScale}`);
           });
         }
       });

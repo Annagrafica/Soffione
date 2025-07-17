@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti con uscita e rientro naturale ai bordi</title>
+    <title>Soffioni volanti senza salto improvviso</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -105,7 +105,6 @@
       const limitY = 3;
       const limitZ = 3;
 
-      // Funzione per creare velocità random ma lenta
       function randomVelocity() {
         return {
           x: (Math.random() * 0.0015 + 0.0005) * (Math.random() < 0.5 ? 1 : -1),
@@ -114,43 +113,21 @@
         };
       }
 
-      // Funzione per creare posizione iniziale (fuori schermo da un lato a scelta)
       function startPositionAtEdge() {
-        // Decido un lato da cui far entrare il seme: uno tra 6 facce del cubo
         const face = Math.floor(Math.random() * 6);
         const x = (Math.random() * 2 - 1) * limitX;
         const y = (Math.random() * 2 - 1) * limitY;
         const z = (Math.random() * 2 - 1) * limitZ;
 
         switch(face) {
-          case 0: return { x: -limitX - 0.2, y: y,          z: z           }; // sinistra
-          case 1: return { x: limitX + 0.2,  y: y,          z: z           }; // destra
-          case 2: return { x: x,              y: -limitY - 0.2, z: z          }; // basso
-          case 3: return { x: x,              y: limitY + 0.2,  z: z          }; // alto
-          case 4: return { x: x,              y: y,          z: -limitZ - 0.2  }; // davanti
-          case 5: return { x: x,              y: y,          z: limitZ + 0.2   }; // dietro
+          case 0: return { x: -limitX - 0.2, y: y,          z: z           };
+          case 1: return { x: limitX + 0.2,  y: y,          z: z           };
+          case 2: return { x: x,              y: -limitY - 0.2, z: z          };
+          case 3: return { x: x,              y: limitY + 0.2,  z: z          };
+          case 4: return { x: x,              y: y,          z: -limitZ - 0.2  };
+          case 5: return { x: x,              y: y,          z: limitZ + 0.2   };
           default: return { x: x, y: y, z: z };
         }
-      }
-
-      // Funzione per decidere se un punto è fuori schermo (oltre i limiti + margine)
-      function isOutside(pos) {
-        return (
-          pos.x < -limitX - 0.3 || pos.x > limitX + 0.3 ||
-          pos.y < -limitY - 0.3 || pos.y > limitY + 0.3 ||
-          pos.z < -limitZ - 0.3 || pos.z > limitZ + 0.3
-        );
-      }
-
-      // Funzione per ottenere posizione sul lato opposto al bordo uscito
-      function oppositeEdgePosition(pos) {
-        if (pos.x < -limitX - 0.3) return { x: limitX + 0.2, y: (Math.random() * 2 -1)*limitY, z: (Math.random() * 2 -1)*limitZ };
-        if (pos.x > limitX + 0.3) return { x: -limitX - 0.2, y: (Math.random() * 2 -1)*limitY, z: (Math.random() * 2 -1)*limitZ };
-        if (pos.y < -limitY - 0.3) return { x: (Math.random() * 2 -1)*limitX, y: limitY + 0.2, z: (Math.random() * 2 -1)*limitZ };
-        if (pos.y > limitY + 0.3) return { x: (Math.random() * 2 -1)*limitX, y: -limitY - 0.2, z: (Math.random() * 2 -1)*limitZ };
-        if (pos.z < -limitZ - 0.3) return { x: (Math.random() * 2 -1)*limitX, y: (Math.random() * 2 -1)*limitY, z: limitZ + 0.2 };
-        if (pos.z > limitZ + 0.3) return { x: (Math.random() * 2 -1)*limitX, y: (Math.random() * 2 -1)*limitY, z: -limitZ - 0.2 };
-        return pos;
       }
 
       const semiData = [];
@@ -194,15 +171,16 @@
             data.pos.y += data.velocity.y;
             data.pos.z += data.velocity.z;
 
-            // Se è uscito fuori oltre margine, ricompare dal bordo opposto mantenendo la direzione
-            if (isOutside(data.pos)) {
-              const newPos = oppositeEdgePosition(data.pos);
-              data.pos.x = newPos.x;
-              data.pos.y = newPos.y;
-              data.pos.z = newPos.z;
-            }
+            // Limita posizione a dentro + margine ma non teletrasporta più
+            if (data.pos.x > limitX + 0.5) data.pos.x = limitX + 0.5;
+            else if (data.pos.x < -limitX - 0.5) data.pos.x = -limitX - 0.5;
 
-            // Scala prospettica
+            if (data.pos.y > limitY + 0.5) data.pos.y = limitY + 0.5;
+            else if (data.pos.y < -limitY - 0.5) data.pos.y = -limitY - 0.5;
+
+            if (data.pos.z > limitZ + 0.5) data.pos.z = limitZ + 0.5;
+            else if (data.pos.z < -limitZ - 0.5) data.pos.z = -limitZ - 0.5;
+
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = data.baseScale * scaleFactor;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;

@@ -164,7 +164,7 @@
           el: img,
           pos: pos,
           velocity: randomVelocity(),
-          baseScale: 1.8,
+          baseScale: 1.8 + Math.random() * 1.2,  // scala casuale tra 1.8 e 3
           aspectRatio: aspect,
         });
       }

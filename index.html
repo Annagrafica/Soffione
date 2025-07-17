@@ -1,17 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni senza marker</title>
+    <title>Soffioni test con pallini colorati</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
-      video#bgVideo {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        object-fit: cover;
-        z-index: -1;
-      }
       #nameLabel {
         position: absolute;
         top: 10px;
@@ -28,53 +21,13 @@
     </style>
   </head>
   <body>
-    <video id="bgVideo" autoplay playsinline muted></video>
     <div id="nameLabel"></div>
-
     <a-scene embedded>
-      <a-assets>
-        <!-- immagini soffioni -->
-        <img id="soffione1" src="assets/soffione1.png" />
-        <img id="soffione2" src="assets/soffione2.png" />
-        <img id="soffione3" src="assets/soffione3.png" />
-        <img id="soffione4" src="assets/soffione4.png" />
-        <img id="soffione5" src="assets/soffione5.png" />
-        <img id="soffione6" src="assets/soffione6.png" />
-        <img id="soffione7" src="assets/soffione7.png" />
-        <img id="soffione8" src="assets/soffione8.png" />
-        <img id="soffione9" src="assets/soffione9.png" />
-        <img id="soffione10" src="assets/soffione10.png" />
-        <img id="soffione11" src="assets/soffione11.png" />
-        <img id="soffione12" src="assets/soffione12.png" />
-        <img id="soffione13" src="assets/soffione13.png" />
-        <img id="soffione14" src="assets/soffione14.png" />
-        <img id="soffione15" src="assets/soffione15.png" />
-        <img id="soffione16" src="assets/soffione16.png" />
-        <img id="soffione17" src="assets/soffione17.png" />
-        <img id="soffione18" src="assets/soffione18.png" />
-        <img id="soffione19" src="assets/soffione19.png" />
-        <img id="soffione20" src="assets/soffione20.png" />
-        <img id="soffione21" src="assets/soffione21.png" />
-        <img id="soffione22" src="assets/soffione22.png" />
-        <img id="soffione23" src="assets/soffione23.png" />
-        <img id="soffione24" src="assets/soffione24.png" />
-        <img id="soffione25" src="assets/soffione25.png" />
-        <img id="soffione26" src="assets/soffione26.png" />
-        <img id="soffione27" src="assets/soffione27.png" />
-        <img id="soffione28" src="assets/soffione28.png" />
-      </a-assets>
-
       <a-entity id="semiContainer"></a-entity>
       <a-entity camera look-controls></a-entity>
     </a-scene>
 
     <script>
-      // Attiva webcam come sfondo
-      const video = document.getElementById('bgVideo');
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => { video.srcObject = stream; })
-        .catch(err => console.error("Camera error:", err));
-
       const semiContainer = document.querySelector('#semiContainer');
       const names = [
         "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
@@ -84,38 +37,42 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
+      const colors = [
+        'red', 'orange', 'yellow', 'lime', 'cyan', 'blue',
+        'purple', 'magenta', 'pink', 'brown', 'gray', 'white',
+        'teal', 'navy', 'maroon', 'olive', 'silver', 'gold',
+        'coral', 'crimson', 'indigo', 'lavender', 'salmon',
+        'tan', 'orchid', 'plum', 'khaki', 'aqua'
+      ];
+
       const semiData = [];
 
-      for (let i = 1; i <= 28; i++) {
+      for (let i = 0; i < 28; i++) {
         const angle = Math.random() * 360;
         const angleRad = angle * Math.PI / 180;
         const distance = 2 + Math.random() * 1.5;
         const yPos = Math.random() * 2 - 1;
 
-        const imgEl = document.getElementById(`soffione${i}`);
-        const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
+        const sphere = document.createElement('a-sphere');
+        sphere.setAttribute('radius', 0.2);
+        sphere.setAttribute('color', colors[i]);
+        sphere.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
+        sphere.setAttribute('material', 'opacity: 0.8; transparent: true');
 
-        const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${i}`);
-        img.setAttribute('position', `${Math.cos(angleRad) * distance} ${yPos} ${-Math.sin(angleRad) * distance}`);
-        img.setAttribute('rotation', '-90 0 0');
-        img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
-
-        img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[i-1]}';
+        sphere.setAttribute('onclick', `
+          document.getElementById('nameLabel').innerText='${names[i]}';
           document.getElementById('nameLabel').style.display='block';
-          setTimeout(()=>{document.getElementById('nameLabel').style.display='none'},2000)
+          setTimeout(() => { document.getElementById('nameLabel').style.display='none' }, 2000);
         `);
 
-        semiContainer.appendChild(img);
+        semiContainer.appendChild(sphere);
 
         semiData.push({
-          el: img,
-          basePos: {x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance},
+          el: sphere,
+          basePos: { x: Math.cos(angleRad) * distance, y: yPos, z: -Math.sin(angleRad) * distance },
           floatSpeed: 0.3 + Math.random() * 0.5,
           phase: Math.random() * Math.PI * 2,
-          baseScale: 0.8 + Math.random() * 0.5,
-          aspectRatio: aspect
+          baseScale: 0.2
         });
       }
 
@@ -132,12 +89,12 @@
             const newY = data.basePos.y + offsetY;
             const newZ = data.basePos.z + offsetZ;
 
-            const scaleFactor = 1 / (1 + Math.abs(newZ));
-            const adjustedScaleY = data.baseScale * scaleFactor;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
-
             data.el.setAttribute('position', `${newX} ${newY} ${newZ}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+
+            // scala proporzionale a profondità
+            const scaleFactor = 1 / (1 + Math.abs(newZ));
+            const scale = data.baseScale * scaleFactor;
+            data.el.setAttribute('scale', `${scale} ${scale} ${scale}`);
           });
         }
       });

@@ -181,58 +181,57 @@
 
       setInterval(spawnSemi, 200);
 
-     AFRAME.registerComponent('semi-fluttuanti', {
+    AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 800;
-    const speedMultiplier = 30 * scaleMultiplier;
+    const dt = timeDelta / 1000;  // più lento, divido per 1000 invece che 800
+    const speedMultiplier = 8 * scaleMultiplier; // velocità molto ridotta
 
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Variazioni casuali per movimenti morbidi
-      data.velocity.x += (Math.random() - 0.5) * 0.0005;
-      data.velocity.y += (Math.random() - 0.5) * 0.0005;
-      // NON modifico direttamente velocity.z per far oscillare z in modo indipendente
+      // Variazioni molto leggere sulle velocità x e y (movimento morbido)
+      data.velocity.x += (Math.random() - 0.5) * 0.0001;
+      data.velocity.y += (Math.random() - 0.5) * 0.0001;
 
-      // Limita velocità
-      data.velocity.x = Math.max(Math.min(data.velocity.x, 0.02), -0.02);
-      data.velocity.y = Math.max(Math.min(data.velocity.y, 0.02), -0.02);
+      // Limita velocità a valori molto bassi per movimento lento
+      data.velocity.x = Math.max(Math.min(data.velocity.x, 0.008), -0.008);
+      data.velocity.y = Math.max(Math.min(data.velocity.y, 0.008), -0.008);
 
       // Aggiorna posizione x e y
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
 
-      // Ora gestiamo oscillazione casuale della profondità (pos.z)
-      // Usa una funzione sinusoidale combinata con rumore casuale per oscillare avanti e indietro
-      const oscillationSpeed = 0.0001; // velocità oscillazione z
-      const oscillationRange = 1.0;    // ampiezza oscillazione z
+      // Oscillazione molto lenta e naturale per z
+      const oscillationSpeed = 0.00015;  // velocità oscillazione molto lenta
+      const oscillationRange = 1.0;       // ampiezza oscillazione
 
-      // Calcola nuova z con oscillazione attorno al valore corrente
-      data.pos.z = data.pos.z + Math.sin(time * oscillationSpeed + index) * oscillationRange * dt;
+      // Usa una sinusoide con fase unica per ogni seme per non avere movimenti uguali
+      data.pos.z += Math.sin(time * oscillationSpeed + index) * oscillationRange * dt * 0.3;
 
-      // Scala con limiti morbidi
+      // Scala con limiti morbidi, nessuna esplosione
       const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
       const adjustedScaleY = Math.min(
-        Math.max(scaleValue, 0.4 * scaleMultiplier),
-        1.2 * scaleMultiplier
+        Math.max(scaleValue, 0.5 * scaleMultiplier),  // limite minimo
+        1.0 * scaleMultiplier                         // limite massimo
       );
       const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-      // Applica posizione e scala
+      // Aggiorna posizione e scala
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // Rimuovi se esce dai limiti
+      // Rimuove solo se completamente fuori dallo schermo, con margine più grande
       if (
-        Math.abs(data.pos.x) > limitX + 1.5 ||
-        Math.abs(data.pos.y) > limitY + 1.5 ||
-        Math.abs(data.pos.z) > limitZ + 1.5
+        Math.abs(data.pos.x) > limitX + 3 ||
+        Math.abs(data.pos.y) > limitY + 3 ||
+        Math.abs(data.pos.z) > limitZ + 3
       ) {
         removeSeme(index);
       }
     });
   }
 });
+
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

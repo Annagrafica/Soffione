@@ -149,50 +149,63 @@
       }
 
       AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time, timeDelta) {
-          const dt = timeDelta / 800;
-          const speedMultiplier = 28 * scaleMultiplier;
+  tick: function (time, timeDelta) {
+    const dt = timeDelta / 1000;
+    const speedMultiplier = 12 * scaleMultiplier;
 
-          semiData.forEach(data => {
-            // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0008;
-            data.velocity.y += (Math.random() - 0.5) * 0.0008;
-            data.velocity.z += (Math.random() - 0.5) * 0.0008;
+    semiData.forEach(data => {
+      // Movimento irregolare
+      data.velocity.x += (Math.random() - 0.5) * 0.0008;
+      data.velocity.y += (Math.random() - 0.5) * 0.0008;
+      data.velocity.z += (Math.random() - 0.5) * 0.0008;
 
-            // Limita velocità minima (per evitare semi fermi)
-            const minSpeed = 0.001;
-            if (Math.abs(data.velocity.x) < minSpeed) data.velocity.x += (Math.random() < 0.5 ? minSpeed : -minSpeed);
-            if (Math.abs(data.velocity.y) < minSpeed) data.velocity.y += (Math.random() < 0.5 ? minSpeed : -minSpeed);
-            if (Math.abs(data.velocity.z) < minSpeed) data.velocity.z += (Math.random() < 0.5 ? minSpeed : -minSpeed);
+      // Limita velocità minima
+      const minSpeed = 0.0003;
+      if (Math.abs(data.velocity.x) < minSpeed) data.velocity.x += (Math.random() < 0.5 ? minSpeed : -minSpeed);
+      if (Math.abs(data.velocity.y) < minSpeed) data.velocity.y += (Math.random() < 0.5 ? minSpeed : -minSpeed);
+      if (Math.abs(data.velocity.z) < minSpeed) data.velocity.z += (Math.random() < 0.5 ? minSpeed : -minSpeed);
 
-            // Aggiorna posizione
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+      // Aggiorna posizione
+      data.pos.x += data.velocity.x * dt * speedMultiplier;
+      data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Mantieni dentro i limiti
-            if (data.pos.x > limitX) { data.pos.x = limitX; data.velocity.x *= -1; }
-            if (data.pos.x < -limitX) { data.pos.x = -limitX; data.velocity.x *= -1; }
-            if (data.pos.y > limitY) { data.pos.y = limitY; data.velocity.y *= -1; }
-            if (data.pos.y < -limitY) { data.pos.y = -limitY; data.velocity.y *= -1; }
-            if (data.pos.z > limitZ) { data.pos.z = limitZ; data.velocity.z *= -1; }
-            if (data.pos.z < -limitZ) { data.pos.z = -limitZ; data.velocity.z *= -1; }
+      // Se esce fuori dai limiti, torna subito dentro con posizione casuale vicina al bordo
+      if (Math.abs(data.pos.x) > limitX) {
+        data.pos.x = (data.pos.x > 0) ? limitX : -limitX;
+        data.pos.y = (Math.random() - 0.5) * limitY * 2 * 0.8; // vicino al centro, random verticale
+        data.pos.z = (Math.random() - 0.5) * limitZ * 2 * 0.8; 
+        // opzionale: inverti velocità x per farlo tornare indietro
+        data.velocity.x = -data.velocity.x;
+      }
+      if (Math.abs(data.pos.y) > limitY) {
+        data.pos.y = (data.pos.y > 0) ? limitY : -limitY;
+        data.pos.x = (Math.random() - 0.5) * limitX * 2 * 0.8;
+        data.pos.z = (Math.random() - 0.5) * limitZ * 2 * 0.8;
+        data.velocity.y = -data.velocity.y;
+      }
+      if (Math.abs(data.pos.z) > limitZ) {
+        data.pos.z = (data.pos.z > 0) ? limitZ : -limitZ;
+        data.pos.x = (Math.random() - 0.5) * limitX * 2 * 0.8;
+        data.pos.y = (Math.random() - 0.5) * limitY * 2 * 0.8;
+        data.velocity.z = -data.velocity.z;
+      }
 
-            // Scala proporzionale alla distanza
-            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.8 * scaleMultiplier;
-            const maxScale = 1.8 * scaleMultiplier;
-            scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+      // Scala proporzionale alla distanza
+      let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
+      const minScale = 0.5 * scaleMultiplier;
+      const maxScale = 1.2 * scaleMultiplier;
+      scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
-            const adjustedScaleY = scaleValue;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+      const adjustedScaleY = scaleValue;
+      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            // Applica posizione e scala
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-          });
-        }
-      });
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+    });
+  }
+});
+
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

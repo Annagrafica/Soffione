@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Soffioni volanti - adattato a tutti gli schermi</title>
+    <title>Momento mori</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -101,7 +101,7 @@
 
       const semiData = [];
       const activeSemi = [];
-      const maxActiveSemi = 15;
+      const maxActiveSemi = 28;
 
       // Adattamento dinamico per schermi
       const screenRatio = window.innerWidth / window.innerHeight;
@@ -178,12 +178,12 @@
         }
       }
 
-      setInterval(spawnSemi, 400);
+      setInterval(spawnSemi, 200);
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 800;
-          const speedMultiplier = 20 * scaleMultiplier;
+          const speedMultiplier = 30 * scaleMultiplier;
 
           activeSemi.forEach(index => {
             const data = semiData[index];
@@ -194,8 +194,8 @@
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = Math.min(
               data.baseScale * scaleFactor,
-              data.baseScale * 1.05, // Limite massimo scala
-              2.8 * scaleMultiplier // Limite assoluto
+              data.baseScale * 1.01, // Limite massimo scala
+              1.8 * scaleMultiplier // Limite assoluto
             );
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 

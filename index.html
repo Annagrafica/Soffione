@@ -44,9 +44,34 @@
     <a-scene embedded>
       <a-assets>
         <!-- 28 immagini soffione -->
-        ${[...Array(28).keys()].map(i =>
-          `<img id="soffione${i + 1}" src="assets/soffione${i + 1}.png" />`
-        ).join('\n')}
+        <img id="soffione1" src="assets/soffione1.png" />
+        <img id="soffione2" src="assets/soffione2.png" />
+        <img id="soffione3" src="assets/soffione3.png" />
+        <img id="soffione4" src="assets/soffione4.png" />
+        <img id="soffione5" src="assets/soffione5.png" />
+        <img id="soffione6" src="assets/soffione6.png" />
+        <img id="soffione7" src="assets/soffione7.png" />
+        <img id="soffione8" src="assets/soffione8.png" />
+        <img id="soffione9" src="assets/soffione9.png" />
+        <img id="soffione10" src="assets/soffione10.png" />
+        <img id="soffione11" src="assets/soffione11.png" />
+        <img id="soffione12" src="assets/soffione12.png" />
+        <img id="soffione13" src="assets/soffione13.png" />
+        <img id="soffione14" src="assets/soffione14.png" />
+        <img id="soffione15" src="assets/soffione15.png" />
+        <img id="soffione16" src="assets/soffione16.png" />
+        <img id="soffione17" src="assets/soffione17.png" />
+        <img id="soffione18" src="assets/soffione18.png" />
+        <img id="soffione19" src="assets/soffione19.png" />
+        <img id="soffione20" src="assets/soffione20.png" />
+        <img id="soffione21" src="assets/soffione21.png" />
+        <img id="soffione22" src="assets/soffione22.png" />
+        <img id="soffione23" src="assets/soffione23.png" />
+        <img id="soffione24" src="assets/soffione24.png" />
+        <img id="soffione25" src="assets/soffione25.png" />
+        <img id="soffione26" src="assets/soffione26.png" />
+        <img id="soffione27" src="assets/soffione27.png" />
+        <img id="soffione28" src="assets/soffione28.png" />
       </a-assets>
 
       <a-entity id="semiContainer"></a-entity>
@@ -78,13 +103,11 @@
       const activeSemi = [];
       const maxActiveSemi = 28;
 
-      // Riconoscimento verticale/orizzontale
+      // Adattamento dinamico per portrait/landscape
       const isPortrait = window.innerHeight > window.innerWidth;
       const screenRatio = window.innerWidth / window.innerHeight;
-      const scaleMultiplier = isPortrait ? 0.9 : 1;
-
-      // Limiti adattati
-      const limitX = (isPortrait ? 2.0 : 3.0) * scaleMultiplier * screenRatio;
+      const scaleMultiplier = isPortrait ? 0.8 : 1; // semi leggermente più piccoli in verticale
+      const limitX = (isPortrait ? 2.2 : 3.0) * scaleMultiplier * screenRatio;
       const limitY = (isPortrait ? 3.5 : 2.5) * scaleMultiplier;
       const limitZ = 3 * scaleMultiplier;
 

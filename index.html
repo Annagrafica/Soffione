@@ -172,8 +172,8 @@
 
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.9 * scaleMultiplier;
-            const maxScale = 2.8 * scaleMultiplier;
+            const minScale = 0.5 * scaleMultiplier;
+            const maxScale = 1.8 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

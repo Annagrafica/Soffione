@@ -150,8 +150,8 @@
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
-          const dt = timeDelta / 1000;
-          const speedMultiplier = 8 * scaleMultiplier;
+          const dt = timeDelta / 800;
+          const speedMultiplier = 20 * scaleMultiplier;
           let visibleSemi = 0;
 
           semiData.forEach(data => {
@@ -172,8 +172,8 @@
 
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.5 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier;
+            const minScale = 0.6 * scaleMultiplier;
+            const maxScale = 1.4 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;
@@ -193,9 +193,9 @@
           });
 
           // Se meno di 5 semi visibili, sposta casualmente alcuni semi verso il centro
-          if (visibleSemi < 5) {
+          if (visibleSemi < 8) {
             semiData.forEach(data => {
-              if (visibleSemi >= 5) return;
+              if (visibleSemi >= 8) return;
               data.pos.x = (Math.random() - 0.5) * limitX * 0.8;
               data.pos.y = (Math.random() - 0.5) * limitY * 0.8;
               data.pos.z = (Math.random() - 0.5) * limitZ * 0.8;

@@ -105,6 +105,7 @@
       const limitX = 3 * scaleMultiplier * (window.innerWidth / window.innerHeight);
       const limitY = 2.5 * scaleMultiplier;
       const limitZ = 3 * scaleMultiplier;
+      const teleportMargin = 5.0; // margine esterno invisibile
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -115,7 +116,6 @@
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        // Posizione e direzione random
         const posX = (Math.random() - 0.5) * limitX * 2;
         const posY = (Math.random() - 0.5) * limitY * 2;
         const posZ = (Math.random() - 0.5) * limitZ * 2;
@@ -152,60 +152,54 @@
       for (let i = 0; i < totalSemi; i++) {
         createSeme(i);
       }
-AFRAME.registerComponent('semi-fluttuanti', {
-  tick: function (time, timeDelta) {
-    const dt = timeDelta / 500;
-    const speedMultiplier = 8 * scaleMultiplier;
-    const margin = 2.0; // quanto possono uscire fuori
 
-    activeSemi.forEach(index => {
-      const data = semiData[index];
+      AFRAME.registerComponent('semi-fluttuanti', {
+        tick: function (time, timeDelta) {
+          const dt = timeDelta / 500;
+          const speedMultiplier = 8 * scaleMultiplier;
 
-      // Movimento irregolare
-      data.velocity.x += (Math.random() - 0.5) * 0.0002;
-      data.velocity.y += (Math.random() - 0.5) * 0.0002;
-      data.velocity.z += (Math.random() - 0.5) * 0.0002;
+          activeSemi.forEach(index => {
+            const data = semiData[index];
 
-      // Limita la velocità massima
-      const maxSpeed = 0.006;
-      data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
-      data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
-      data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
+            // Movimento irregolare
+            data.velocity.x += (Math.random() - 0.5) * 0.0002;
+            data.velocity.y += (Math.random() - 0.5) * 0.0002;
+            data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-      // Aggiorna posizione
-      data.pos.x += data.velocity.x * dt * speedMultiplier;
-      data.pos.y += data.velocity.y * dt * speedMultiplier;
-      data.pos.z += data.velocity.z * dt * speedMultiplier;
+            // Limita velocità
+            const maxSpeed = 0.006;
+            data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
+            data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
+            data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
 
-      // Se il seme è troppo fuori, spingilo verso il centro
-      if (Math.abs(data.pos.x) > limitX + margin ||
-          Math.abs(data.pos.y) > limitY + margin ||
-          Math.abs(data.pos.z) > limitZ + margin) {
-        // Calcola vettore verso il centro
-        const toCenterX = -data.pos.x * 0.001;
-        const toCenterY = -data.pos.y * 0.001;
-        const toCenterZ = -data.pos.z * 0.001;
-        // Aggiungi questa spinta al movimento
-        data.velocity.x += toCenterX;
-        data.velocity.y += toCenterY;
-        data.velocity.z += toCenterZ;
-      }
+            // Aggiorna posizione
+            data.pos.x += data.velocity.x * dt * speedMultiplier;
+            data.pos.y += data.velocity.y * dt * speedMultiplier;
+            data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Limite scala
-      let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-      const minScale = 0.5 * scaleMultiplier;
-      const maxScale = 1.2 * scaleMultiplier;
-      scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+            // Se oltre il margine invisibile, teleportalo dall’altra parte
+            if (data.pos.x > limitX + teleportMargin) data.pos.x = -limitX - teleportMargin;
+            if (data.pos.x < -limitX - teleportMargin) data.pos.x = limitX + teleportMargin;
+            if (data.pos.y > limitY + teleportMargin) data.pos.y = -limitY - teleportMargin;
+            if (data.pos.y < -limitY - teleportMargin) data.pos.y = limitY + teleportMargin;
+            if (data.pos.z > limitZ + teleportMargin) data.pos.z = -limitZ - teleportMargin;
+            if (data.pos.z < -limitZ - teleportMargin) data.pos.z = limitZ + teleportMargin;
 
-      const adjustedScaleY = scaleValue;
-      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+            // Limita scala
+            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
+            const minScale = 0.5 * scaleMultiplier;
+            const maxScale = 1.2 * scaleMultiplier;
+            scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
-      // Applica posizione e scala
-      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-    });
-  }
-});
+            const adjustedScaleY = scaleValue;
+            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+            // Applica posizione e scala
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+          });
+        }
+      });
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

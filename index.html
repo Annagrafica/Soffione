@@ -151,14 +151,14 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 8 * scaleMultiplier;
+          const speedMultiplier = 28 * scaleMultiplier;
           let visibleSemi = 0;
 
           semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0004;
-            data.velocity.y += (Math.random() - 0.5) * 0.0004;
-            data.velocity.z += (Math.random() - 0.5) * 0.0004;
+            data.velocity.x += (Math.random() - 0.5) * 0.0008;
+            data.velocity.y += (Math.random() - 0.5) * 0.0008;
+            data.velocity.z += (Math.random() - 0.5) * 0.0008;
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;
@@ -172,8 +172,8 @@
 
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.5 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier;
+            const minScale = 0.7 * scaleMultiplier;
+            const maxScale = 1.6 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

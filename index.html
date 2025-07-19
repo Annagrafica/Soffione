@@ -161,8 +161,8 @@
             data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
             // Aggiorna posizione
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
+            data.pos.x += data.velocity.x * dt * (speedMultiplier * 0.5);
+            data.pos.y += data.velocity.y * dt * (speedMultiplier * 0.5);
 data.pos.z += data.velocity.z * dt * (speedMultiplier * 0.5);
 
             // Controlla limiti

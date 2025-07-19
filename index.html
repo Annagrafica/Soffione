@@ -181,7 +181,7 @@
 
       setInterval(spawnSemi, 200);
 
-      AFRAME.registerComponent('semi-fluttuanti', {
+     AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
     const dt = timeDelta / 800;
     const speedMultiplier = 30 * scaleMultiplier;
@@ -189,34 +189,41 @@
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Aggiungo piccole variazioni casuali alle velocità per movimento non lineare
+      // Movimento con variazioni casuali per traiettorie morbide e irregolari
       data.velocity.x += (Math.random() - 0.5) * 0.0005;
       data.velocity.y += (Math.random() - 0.5) * 0.0005;
       data.velocity.z += (Math.random() - 0.5) * 0.0005;
 
-      // Limito la velocità massima per evitare movimenti troppo veloci
+      // Limita velocità per non andare troppo veloci
       data.velocity.x = Math.max(Math.min(data.velocity.x, 0.02), -0.02);
       data.velocity.y = Math.max(Math.min(data.velocity.y, 0.02), -0.02);
       data.velocity.z = Math.max(Math.min(data.velocity.z, 0.02), -0.02);
 
-      // Aggiorno posizione
+      // Aggiorna posizione
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
       data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Calcolo scala con limite massimo e minimo per evitare esplosioni
+      // Scala con limiti morbidi, senza "esplosioni"
       const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
       const adjustedScaleY = Math.min(
-        Math.max(scaleValue, 0.7 * scaleMultiplier), // limite minimo
-        0.9 * scaleMultiplier                        // limite massimo
+        Math.max(scaleValue, 0.4 * scaleMultiplier),  // limite minimo (piccolo)
+        1.2 * scaleMultiplier                         // limite massimo (non troppo grande)
       );
       const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-      // Applico posizione e scala
+      // Applica posizione e scala
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // NON rimuovo i semi quando escono dallo schermo (niente esplosione)
+      // Rimuovi seme se esce fuori dai limiti dello schermo
+      if (
+        Math.abs(data.pos.x) > limitX + 1.5 ||
+        Math.abs(data.pos.y) > limitY + 1.5 ||
+        Math.abs(data.pos.z) > limitZ + 1.5
+      ) {
+        removeSeme(index);
+      }
     });
   }
 });

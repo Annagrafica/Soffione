@@ -134,9 +134,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.002,
-            y: (Math.random() - 0.5) * 0.002,
-            z: (Math.random() - 0.5) * 0.002
+            x: (Math.random() - 0.5) * 0.001,
+            y: (Math.random() - 0.5) * 0.001,
+            z: (Math.random() - 0.5) * 0.001
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
           aspectRatio: aspect
@@ -151,14 +151,14 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 22 * scaleMultiplier;
+          const speedMultiplier = 25 * scaleMultiplier;
           let visibleSemi = 0;
 
           semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0008;
-            data.velocity.y += (Math.random() - 0.5) * 0.0008;
-            data.velocity.z += (Math.random() - 0.5) * 0.0008;
+            data.velocity.x += (Math.random() - 0.5) * 0.0006;
+            data.velocity.y += (Math.random() - 0.5) * 0.0006;
+            data.velocity.z += (Math.random() - 0.5) * 0.0006;
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;
@@ -173,7 +173,7 @@
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
             const minScale = 0.7 * scaleMultiplier;
-            const maxScale = 1.6 * scaleMultiplier;
+            const maxScale = 1.8 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

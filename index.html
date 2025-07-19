@@ -99,7 +99,6 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-      const semiData = [];
       const scaleMultiplier = (window.innerWidth / window.innerHeight < 1) ? 0.7 : 1;
       const limitX = 2.5 * scaleMultiplier * (window.innerWidth / window.innerHeight);
       const limitY = 2.0 * scaleMultiplier;
@@ -139,7 +138,8 @@
             z: (Math.random() - 0.5) * 0.001
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: aspect
+          aspectRatio: aspect,
+          currentScale: 1 // per transizione dolce scala
         };
       }
 
@@ -150,16 +150,16 @@
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
-          const dt = timeDelta / 500;
-          const speedMultiplier = 30 * scaleMultiplier;
+          const dt = timeDelta / 1000;
+          const speedMultiplier = 8 * scaleMultiplier;
 
           let visibleSemi = 0;
 
           semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0001;
-            data.velocity.y += (Math.random() - 0.5) * 0.0001;
-            data.velocity.z += (Math.random() - 0.5) * 0.0001;
+            data.velocity.x += (Math.random() - 0.5) * 0.0006;
+            data.velocity.y += (Math.random() - 0.5) * 0.0006;
+            data.velocity.z += (Math.random() - 0.5) * 0.0006;
 
             // Limita velocità minima
             const minSpeed = 0.0003;
@@ -172,18 +172,25 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Conta quanti semi sono vicini al centro
-            if (Math.abs(data.pos.x) < limitX * 0.8 &&
-                Math.abs(data.pos.y) < limitY * 0.8 &&
-                Math.abs(data.pos.z) < limitZ * 0.8) {
+            // Conta semi vicini al centro
+            if (Math.abs(data.pos.x) < limitX * 0.6 &&
+                Math.abs(data.pos.y) < limitY * 0.6 &&
+                Math.abs(data.pos.z) < limitZ * 0.6) {
               visibleSemi++;
             }
 
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.7 * scaleMultiplier;
-            const maxScale = 1.3 * scaleMultiplier;
+            const minScale = 0.8 * scaleMultiplier; // scala minima aumentata
+            const maxScale = 1.2 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+
+            // Transizione dolce scala
+            const oldScale = data.currentScale;
+            if (Math.abs(scaleValue - oldScale) > 0.1) {
+              scaleValue = oldScale + (scaleValue > oldScale ? 0.05 : -0.05);
+            }
+            data.currentScale = scaleValue;
 
             const adjustedScaleY = scaleValue;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
@@ -192,16 +199,16 @@
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
 
-          // Forza almeno 5 semi vicino al centro
+          // Ricentra semi se pochi visibili
           if (visibleSemi < 5) {
             semiData.forEach(data => {
               if (visibleSemi >= 5) return;
-              if (Math.abs(data.pos.x) > limitX * 0.8 ||
-                  Math.abs(data.pos.y) > limitY * 0.8 ||
-                  Math.abs(data.pos.z) > limitZ * 0.8) {
-                data.pos.x = (Math.random() - 0.5) * limitX;
-                data.pos.y = (Math.random() - 0.5) * limitY;
-                data.pos.z = (Math.random() - 0.5) * limitZ;
+              if (Math.abs(data.pos.x) > limitX * 0.6 ||
+                  Math.abs(data.pos.y) > limitY * 0.6 ||
+                  Math.abs(data.pos.z) > limitZ * 0.6) {
+                data.pos.x = (Math.random() - 0.5) * limitX * 0.5;
+                data.pos.y = (Math.random() - 0.5) * limitY * 0.5;
+                data.pos.z = (Math.random() - 0.5) * limitZ * 0.5;
                 visibleSemi++;
               }
             });

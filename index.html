@@ -183,44 +183,41 @@
 
     AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 1000;  // più lento, divido per 1000 invece che 800
-    const speedMultiplier = 8 * scaleMultiplier; // velocità molto ridotta
+    const dt = timeDelta / 1000;  // scala il tempo per un movimento lento
+    const speedMultiplier = 8 * scaleMultiplier;
 
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Variazioni molto leggere sulle velocità x e y (movimento morbido)
-      data.velocity.x += (Math.random() - 0.5) * 0.0001;
-      data.velocity.y += (Math.random() - 0.5) * 0.0001;
+      // Aggiungi variazioni leggere e casuali alle velocità su tutti e 3 gli assi
+      data.velocity.x += (Math.random() - 0.5) * 0.0002;
+      data.velocity.y += (Math.random() - 0.5) * 0.0002;
+      data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-      // Limita velocità a valori molto bassi per movimento lento
-      data.velocity.x = Math.max(Math.min(data.velocity.x, 0.008), -0.008);
-      data.velocity.y = Math.max(Math.min(data.velocity.y, 0.008), -0.008);
+      // Limita velocità massima per movimenti dolci e lenti
+      const maxSpeed = 0.008;
+      data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
+      data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
+      data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
 
-      // Aggiorna posizione x e y
+      // Aggiorna la posizione con la velocità modificata
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Oscillazione molto lenta e naturale per z
-      const oscillationSpeed = 0.00015;  // velocità oscillazione molto lenta
-      const oscillationRange = 1.0;       // ampiezza oscillazione
-
-      // Usa una sinusoide con fase unica per ogni seme per non avere movimenti uguali
-      data.pos.z += Math.sin(time * oscillationSpeed + index) * oscillationRange * dt * 0.3;
-
-      // Scala con limiti morbidi, nessuna esplosione
+      // Scala con limiti morbidi
       const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
       const adjustedScaleY = Math.min(
-        Math.max(scaleValue, 0.5 * scaleMultiplier),  // limite minimo
-        1.0 * scaleMultiplier                         // limite massimo
+        Math.max(scaleValue, 0.5 * scaleMultiplier),
+        1.0 * scaleMultiplier
       );
       const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-      // Aggiorna posizione e scala
+      // Applica posizione e scala
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // Rimuove solo se completamente fuori dallo schermo, con margine più grande
+      // Rimuovi il seme se esce fuori dai limiti (con margine ampio)
       if (
         Math.abs(data.pos.x) > limitX + 3 ||
         Math.abs(data.pos.y) > limitY + 3 ||

@@ -134,9 +134,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.002,
-            y: (Math.random() - 0.5) * 0.002,
-            z: (Math.random() - 0.5) * 0.002
+            x: (Math.random() - 0.5) * 0.001,
+            y: (Math.random() - 0.5) * 0.001,
+            z: (Math.random() - 0.5) * 0.001
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
           aspectRatio: aspect
@@ -151,7 +151,9 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 30 * scaleMultiplier;
+          const speedMultiplier = 8 * scaleMultiplier;
+
+          let visibleSemi = 0;
 
           semiData.forEach(data => {
             // Movimento irregolare
@@ -159,8 +161,8 @@
             data.velocity.y += (Math.random() - 0.5) * 0.0002;
             data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-            // Limita velocità minima (per evitare semi fermi)
-            const minSpeed = 0.002;
+            // Limita velocità minima
+            const minSpeed = 0.0003;
             if (Math.abs(data.velocity.x) < minSpeed) data.velocity.x += (Math.random() < 0.5 ? minSpeed : -minSpeed);
             if (Math.abs(data.velocity.y) < minSpeed) data.velocity.y += (Math.random() < 0.5 ? minSpeed : -minSpeed);
             if (Math.abs(data.velocity.z) < minSpeed) data.velocity.z += (Math.random() < 0.5 ? minSpeed : -minSpeed);
@@ -170,27 +172,40 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Mantieni dentro i limiti
-            if (data.pos.x > limitX) { data.pos.x = limitX; data.velocity.x *= -1; }
-            if (data.pos.x < -limitX) { data.pos.x = -limitX; data.velocity.x *= -1; }
-            if (data.pos.y > limitY) { data.pos.y = limitY; data.velocity.y *= -1; }
-            if (data.pos.y < -limitY) { data.pos.y = -limitY; data.velocity.y *= -1; }
-            if (data.pos.z > limitZ) { data.pos.z = limitZ; data.velocity.z *= -1; }
-            if (data.pos.z < -limitZ) { data.pos.z = -limitZ; data.velocity.z *= -1; }
+            // Conta quanti semi sono vicini al centro
+            if (Math.abs(data.pos.x) < limitX * 0.8 &&
+                Math.abs(data.pos.y) < limitY * 0.8 &&
+                Math.abs(data.pos.z) < limitZ * 0.8) {
+              visibleSemi++;
+            }
 
             // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.7 * scaleMultiplier;
+            const minScale = 0.5 * scaleMultiplier;
             const maxScale = 1.2 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            // Applica posizione e scala
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
           });
+
+          // Forza almeno 5 semi vicino al centro
+          if (visibleSemi < 5) {
+            semiData.forEach(data => {
+              if (visibleSemi >= 5) return;
+              if (Math.abs(data.pos.x) > limitX * 0.8 ||
+                  Math.abs(data.pos.y) > limitY * 0.8 ||
+                  Math.abs(data.pos.z) > limitZ * 0.8) {
+                data.pos.x = (Math.random() - 0.5) * limitX;
+                data.pos.y = (Math.random() - 0.5) * limitY;
+                data.pos.z = (Math.random() - 0.5) * limitZ;
+                visibleSemi++;
+              }
+            });
+          }
         }
       });
 

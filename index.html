@@ -195,8 +195,8 @@
             // Calcolo scala con limiti
             const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
             const adjustedScaleY = Math.min(
-              Math.max(scaleValue, 0.5 * scaleMultiplier), // limite minimo
-              1.0 * scaleMultiplier                        // limite massimo
+              Math.max(scaleValue, 0.6 * scaleMultiplier), // limite minimo
+              0.9 * scaleMultiplier                        // limite massimo
             );
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 

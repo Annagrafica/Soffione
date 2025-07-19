@@ -105,10 +105,11 @@
 
       // Adattamento dinamico per schermi
       const screenRatio = window.innerWidth / window.innerHeight;
-      const scaleMultiplier = screenRatio < 1 ? 0.7 : 1;
-      const limitX = 3 * scaleMultiplier * screenRatio;
-      const limitY = 2.5 * scaleMultiplier;
-      const limitZ = 3 * scaleMultiplier;
+const isPortrait = window.innerHeight > window.innerWidth;
+const scaleMultiplier = isPortrait ? 0.9 : 1;
+const limitX = (isPortrait ? 2.0 : 3.0) * scaleMultiplier * screenRatio;
+const limitY = (isPortrait ? 3.5 : 2.5) * scaleMultiplier; // Più ampio in verticale
+const limitZ = 3 * scaleMultiplier;
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -192,12 +193,13 @@
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
-            const adjustedScaleY = Math.min(
-              data.baseScale * scaleFactor,
-              data.baseScale * 1.06, // Limite massimo scala
-              2.8 * scaleMultiplier // Limite assoluto
-            );
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+// Limiti minimo e massimo per la scala
+const scaleValue = data.baseScale * scaleFactor;
+const adjustedScaleY = Math.max(
+  Math.min(scaleValue, 2.0 * scaleMultiplier), // Limite massimo
+  0.5 * scaleMultiplier // Limite minimo
+);
+const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);

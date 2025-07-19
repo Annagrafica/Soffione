@@ -100,12 +100,10 @@
       ];
 
       const semiData = [];
-      const activeSemi = [];
       const scaleMultiplier = (window.innerWidth / window.innerHeight < 1) ? 0.7 : 1;
-      const limitX = 3 * scaleMultiplier * (window.innerWidth / window.innerHeight);
-      const limitY = 2.5 * scaleMultiplier;
-      const limitZ = 3 * scaleMultiplier;
-      const teleportMargin = 5.0; // margine esterno invisibile
+      const limitX = 2.5 * scaleMultiplier * (window.innerWidth / window.innerHeight);
+      const limitY = 2.0 * scaleMultiplier;
+      const limitZ = 2.5 * scaleMultiplier;
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -136,16 +134,13 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.005,
-            y: (Math.random() - 0.5) * 0.005,
-            z: (Math.random() - 0.5) * 0.005
+            x: (Math.random() - 0.5) * 0.002,
+            y: (Math.random() - 0.5) * 0.002,
+            z: (Math.random() - 0.5) * 0.002
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: aspect,
-          active: true
+          aspectRatio: aspect
         };
-
-        activeSemi.push(index);
       }
 
       // Crea tutti i semi
@@ -156,39 +151,37 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 500;
-          const speedMultiplier = 8 * scaleMultiplier;
+          const speedMultiplier = 10 * scaleMultiplier;
 
-          activeSemi.forEach(index => {
-            const data = semiData[index];
-
+          semiData.forEach(data => {
             // Movimento irregolare
             data.velocity.x += (Math.random() - 0.5) * 0.0002;
             data.velocity.y += (Math.random() - 0.5) * 0.0002;
             data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-            // Limita velocità
-            const maxSpeed = 0.006;
-            data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
-            data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
-            data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
+            // Limita velocità minima (per evitare semi fermi)
+            const minSpeed = 0.001;
+            if (Math.abs(data.velocity.x) < minSpeed) data.velocity.x += (Math.random() < 0.5 ? minSpeed : -minSpeed);
+            if (Math.abs(data.velocity.y) < minSpeed) data.velocity.y += (Math.random() < 0.5 ? minSpeed : -minSpeed);
+            if (Math.abs(data.velocity.z) < minSpeed) data.velocity.z += (Math.random() < 0.5 ? minSpeed : -minSpeed);
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Se oltre il margine invisibile, teleportalo dall’altra parte
-            if (data.pos.x > limitX + teleportMargin) data.pos.x = -limitX - teleportMargin;
-            if (data.pos.x < -limitX - teleportMargin) data.pos.x = limitX + teleportMargin;
-            if (data.pos.y > limitY + teleportMargin) data.pos.y = -limitY - teleportMargin;
-            if (data.pos.y < -limitY - teleportMargin) data.pos.y = limitY + teleportMargin;
-            if (data.pos.z > limitZ + teleportMargin) data.pos.z = -limitZ - teleportMargin;
-            if (data.pos.z < -limitZ - teleportMargin) data.pos.z = limitZ + teleportMargin;
+            // Mantieni dentro i limiti
+            if (data.pos.x > limitX) { data.pos.x = limitX; data.velocity.x *= -1; }
+            if (data.pos.x < -limitX) { data.pos.x = -limitX; data.velocity.x *= -1; }
+            if (data.pos.y > limitY) { data.pos.y = limitY; data.velocity.y *= -1; }
+            if (data.pos.y < -limitY) { data.pos.y = -limitY; data.velocity.y *= -1; }
+            if (data.pos.z > limitZ) { data.pos.z = limitZ; data.velocity.z *= -1; }
+            if (data.pos.z < -limitZ) { data.pos.z = -limitZ; data.velocity.z *= -1; }
 
-            // Limita scala
+            // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
             const minScale = 0.5 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier;
+            const maxScale = 1.3 * scaleMultiplier;
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

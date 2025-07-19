@@ -183,24 +183,33 @@
 
     AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 1000;  // scala il tempo per un movimento lento
-    const speedMultiplier = 8 * scaleMultiplier;
+    const dt = timeDelta / 500;  // aumento leggermente dt
+    const speedMultiplier = 15 * scaleMultiplier;  // aumento velocità base
 
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Aggiungi variazioni leggere e casuali alle velocità su tutti e 3 gli assi
-      data.velocity.x += (Math.random() - 0.5) * 0.0002;
-      data.velocity.y += (Math.random() - 0.5) * 0.0002;
-      data.velocity.z += (Math.random() - 0.5) * 0.0002;
+      // Se le velocità sono quasi zero, inizializza velocità casuali leggere
+      if (Math.abs(data.velocity.x) < 0.001 &&
+          Math.abs(data.velocity.y) < 0.001 &&
+          Math.abs(data.velocity.z) < 0.001) {
+        data.velocity.x = (Math.random() - 0.5) * 0.005;
+        data.velocity.y = (Math.random() - 0.5) * 0.005;
+        data.velocity.z = (Math.random() - 0.5) * 0.005;
+      }
 
-      // Limita velocità massima per movimenti dolci e lenti
-      const maxSpeed = 0.008;
+      // Aggiungi variazioni casuali alle velocità su tutti gli assi
+      data.velocity.x += (Math.random() - 0.5) * 0.0003;
+      data.velocity.y += (Math.random() - 0.5) * 0.0003;
+      data.velocity.z += (Math.random() - 0.5) * 0.0003;
+
+      // Limita velocità massima per movimento morbido e naturale
+      const maxSpeed = 0.02;
       data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
       data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
       data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
 
-      // Aggiorna la posizione con la velocità modificata
+      // Aggiorna posizione
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
       data.pos.z += data.velocity.z * dt * speedMultiplier;
@@ -217,7 +226,7 @@
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // Rimuovi il seme se esce fuori dai limiti (con margine ampio)
+      // Rimuovi seme se esce dai limiti
       if (
         Math.abs(data.pos.x) > limitX + 3 ||
         Math.abs(data.pos.y) > limitY + 3 ||
@@ -228,8 +237,6 @@
     });
   }
 });
-
-
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>
   </body>

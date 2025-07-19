@@ -181,40 +181,39 @@
 
       setInterval(spawnSemi, 200);
 
-  AFRAME.registerComponent('semi-fluttuanti', {
+AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 500;  // tempo lento
-    const speedMultiplier = 10 * scaleMultiplier;
+    const dt = timeDelta / 500;  // rende il movimento lento e fluido
+    const speedMultiplier = 8 * scaleMultiplier;
 
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Variazione casuale della velocità per traiettoria irregolare
+      // Movimento irregolare: aggiunge leggere variazioni alle velocità
       data.velocity.x += (Math.random() - 0.5) * 0.0002;
       data.velocity.y += (Math.random() - 0.5) * 0.0002;
       data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-      // Limita velocità massima
-      const maxSpeed = 0.01;
+      // Limita la velocità massima per movimento morbido
+      const maxSpeed = 0.008;
       data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
       data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
       data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
 
-      // Aggiorna posizione
+      // Aggiorna la posizione
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
       data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // SE il seme è troppo lontano, inverti la direzione z (così torna indietro)
-      if (Math.abs(data.pos.z) > limitZ) {
-        data.velocity.z *= -1; // cambia direzione
-      }
+      // Se il seme va troppo lontano, inverti la direzione per farlo tornare
+      if (Math.abs(data.pos.x) > limitX) data.velocity.x *= -1;
+      if (Math.abs(data.pos.y) > limitY) data.velocity.y *= -1;
+      if (Math.abs(data.pos.z) > limitZ) data.velocity.z *= -1;
 
-      // Scala controllata con limite minimo
+      // Scala controllata per non farli diventare troppo piccoli o grandi
       let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-      const minScale = 0.5 * scaleMultiplier;  // mai più piccolo di questo
-      const maxScale = 1.2 * scaleMultiplier;  // mai più grande di questo
-
+      const minScale = 0.5 * scaleMultiplier; // limite minimo
+      const maxScale = 1.2 * scaleMultiplier; // limite massimo
       scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
       const adjustedScaleY = scaleValue;
@@ -223,11 +222,10 @@
       // Applica posizione e scala
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-
-      // NON rimuovere mai i semi: lascia che si muovano avanti e indietro per sempre
     });
   }
 });
+
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

@@ -100,11 +100,10 @@
       ];
 
       const semiData = [];
-      const activeSemi = [];
       const scaleMultiplier = (window.innerWidth / window.innerHeight < 1) ? 0.7 : 1;
-      const limitX = 3 * scaleMultiplier * (window.innerWidth / window.innerHeight);
-      const limitY = 2.5 * scaleMultiplier;
-      const limitZ = 3 * scaleMultiplier;
+      const limitX = 2.5 * scaleMultiplier * (window.innerWidth / window.innerHeight);
+      const limitY = 2.0 * scaleMultiplier;
+      const limitZ = 2.5 * scaleMultiplier;
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -115,10 +114,9 @@
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        // Posizione e direzione random
-        const posX = (Math.random() - 0.5) * limitX * 2;
-        const posY = (Math.random() - 0.5) * limitY * 2;
-        const posZ = (Math.random() - 0.5) * limitZ * 2;
+        const posX = (Math.random() - 0.5) * limitX * 1.5;
+        const posY = (Math.random() - 0.5) * limitY * 1.5;
+        const posZ = (Math.random() - 0.5) * limitZ * 1.5;
 
         img.setAttribute('position', `${posX} ${posY} ${posZ}`);
         img.setAttribute('scale', '1 1 1');
@@ -136,16 +134,13 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.005,
-            y: (Math.random() - 0.5) * 0.005,
-            z: (Math.random() - 0.5) * 0.005
+            x: (Math.random() - 0.5) * 0.002,
+            y: (Math.random() - 0.5) * 0.002,
+            z: (Math.random() - 0.5) * 0.002
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: aspect,
-          active: true
+          aspectRatio: aspect
         };
-
-        activeSemi.push(index);
       }
 
       // Crea tutti i semi
@@ -155,34 +150,27 @@
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
-          const dt = timeDelta / 500;
+          const dt = timeDelta / 1000;
           const speedMultiplier = 8 * scaleMultiplier;
+          let visibleSemi = 0;
 
-          activeSemi.forEach(index => {
-            const data = semiData[index];
-
+          semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0002;
-            data.velocity.y += (Math.random() - 0.5) * 0.0002;
-            data.velocity.z += (Math.random() - 0.5) * 0.0002;
-
-            // Limita velocità massima
-            const maxSpeed = 0.008;
-            data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
-            data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
-            data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
+            data.velocity.x += (Math.random() - 0.5) * 0.0004;
+            data.velocity.y += (Math.random() - 0.5) * 0.0004;
+            data.velocity.z += (Math.random() - 0.5) * 0.0004;
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Mantieni sempre vicino al centro
-            if (Math.abs(data.pos.x) > limitX) data.velocity.x *= -1;
-            if (Math.abs(data.pos.y) > limitY) data.velocity.y *= -1;
-            if (Math.abs(data.pos.z) > limitZ) data.velocity.z *= -1;
+            // Controlla limiti
+            if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x = -data.velocity.x;
+            if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y = -data.velocity.y;
+            if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z = -data.velocity.z;
 
-            // Limita la scala
+            // Scala proporzionale alla distanza
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
             const minScale = 0.5 * scaleMultiplier;
             const maxScale = 1.2 * scaleMultiplier;
@@ -191,10 +179,29 @@
             const adjustedScaleY = scaleValue;
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
-            // Applica posizione e scala
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
             data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+
+            // Conta quanti semi visibili
+            if (
+              Math.abs(data.pos.x) < limitX * 0.8 &&
+              Math.abs(data.pos.y) < limitY * 0.8 &&
+              Math.abs(data.pos.z) < limitZ * 0.8
+            ) {
+              visibleSemi++;
+            }
           });
+
+          // Se meno di 5 semi visibili, sposta casualmente alcuni semi verso il centro
+          if (visibleSemi < 5) {
+            semiData.forEach(data => {
+              if (visibleSemi >= 5) return;
+              data.pos.x = (Math.random() - 0.5) * limitX * 0.8;
+              data.pos.y = (Math.random() - 0.5) * limitY * 0.8;
+              data.pos.z = (Math.random() - 0.5) * limitZ * 0.8;
+              visibleSemi++;
+            });
+          }
         }
       });
 

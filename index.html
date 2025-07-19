@@ -105,10 +105,10 @@
 
       function setLimits() {
         const aspectRatio = window.innerWidth / window.innerHeight;
-        scaleMultiplier = (aspectRatio < 1) ? 0.8 : 1; // più piccolo sui telefoni verticali
-        limitX = 1.8 * scaleMultiplier * aspectRatio;
+        scaleMultiplier = (aspectRatio < 1) ? 0.7 : 1; // leggermente più piccolo sui telefoni verticali
+        limitX = 1.5 * scaleMultiplier * aspectRatio;
         limitY = 1.5 * scaleMultiplier;
-        limitZ = 1.8 * scaleMultiplier;
+        limitZ = 1.5 * scaleMultiplier;
       }
 
       function createSeme(index) {
@@ -120,9 +120,9 @@
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        const posX = (Math.random() - 0.5) * limitX * 1.2;
-        const posY = (Math.random() - 0.5) * limitY * 1.2;
-        const posZ = (Math.random() - 0.5) * limitZ * 1.2;
+        const posX = (Math.random() - 0.5) * limitX * 2;
+        const posY = (Math.random() - 0.5) * limitY * 2;
+        const posZ = (Math.random() - 0.5) * limitZ * 2;
 
         img.setAttribute('position', `${posX} ${posY} ${posZ}`);
         img.setAttribute('scale', '1 1 1');
@@ -160,7 +160,7 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 10 * scaleMultiplier;
+          const speedMultiplier = 8 * scaleMultiplier;
 
           semiData.forEach(data => {
             // Movimento irregolare
@@ -173,7 +173,7 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            // Se esce, rientra dal lato opposto
+            // Mantieni i semi sempre dentro i limiti
             if (data.pos.x > limitX) data.pos.x = -limitX;
             if (data.pos.x < -limitX) data.pos.x = limitX;
             if (data.pos.y > limitY) data.pos.y = -limitY;

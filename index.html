@@ -106,7 +106,7 @@
       // Adattamento dinamico per portrait/landscape
       const isPortrait = window.innerHeight > window.innerWidth;
       const screenRatio = window.innerWidth / window.innerHeight;
-      const scaleMultiplier = isPortrait ? 0.8 : 1; // semi leggermente più piccoli in verticale
+      const scaleMultiplier = isPortrait ? 0.8 : 1; // semi più piccoli in verticale
       const limitX = (isPortrait ? 2.2 : 3.0) * scaleMultiplier * screenRatio;
       const limitY = (isPortrait ? 3.5 : 2.5) * scaleMultiplier;
       const limitZ = 3 * scaleMultiplier;
@@ -192,10 +192,11 @@
             data.pos.y += data.velocity.y * dt * speedMultiplier;
             data.pos.z += data.velocity.z * dt * speedMultiplier;
 
+            // Calcolo scala con limiti
             const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const adjustedScaleY = Math.max(
-              Math.min(scaleValue, 2.0 * scaleMultiplier), // max
-              0.5 * scaleMultiplier                      // min
+            const adjustedScaleY = Math.min(
+              Math.max(scaleValue, 0.4 * scaleMultiplier), // limite minimo
+              1.2 * scaleMultiplier                        // limite massimo
             );
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 

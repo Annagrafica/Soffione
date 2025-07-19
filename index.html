@@ -181,30 +181,21 @@
 
       setInterval(spawnSemi, 200);
 
-    AFRAME.registerComponent('semi-fluttuanti', {
+  AFRAME.registerComponent('semi-fluttuanti', {
   tick: function (time, timeDelta) {
-    const dt = timeDelta / 500;  // aumento leggermente dt
-    const speedMultiplier = 15 * scaleMultiplier;  // aumento velocità base
+    const dt = timeDelta / 500;  // tempo lento
+    const speedMultiplier = 10 * scaleMultiplier;
 
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Se le velocità sono quasi zero, inizializza velocità casuali leggere
-      if (Math.abs(data.velocity.x) < 0.001 &&
-          Math.abs(data.velocity.y) < 0.001 &&
-          Math.abs(data.velocity.z) < 0.001) {
-        data.velocity.x = (Math.random() - 0.5) * 0.005;
-        data.velocity.y = (Math.random() - 0.5) * 0.005;
-        data.velocity.z = (Math.random() - 0.5) * 0.005;
-      }
+      // Variazione casuale della velocità per traiettoria irregolare
+      data.velocity.x += (Math.random() - 0.5) * 0.0002;
+      data.velocity.y += (Math.random() - 0.5) * 0.0002;
+      data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-      // Aggiungi variazioni casuali alle velocità su tutti gli assi
-      data.velocity.x += (Math.random() - 0.5) * 0.0003;
-      data.velocity.y += (Math.random() - 0.5) * 0.0003;
-      data.velocity.z += (Math.random() - 0.5) * 0.0003;
-
-      // Limita velocità massima per movimento morbido e naturale
-      const maxSpeed = 0.02;
+      // Limita velocità massima
+      const maxSpeed = 0.01;
       data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
       data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
       data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
@@ -214,29 +205,30 @@
       data.pos.y += data.velocity.y * dt * speedMultiplier;
       data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Scala con limiti morbidi
-      const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-      const adjustedScaleY = Math.min(
-        Math.max(scaleValue, 0.5 * scaleMultiplier),
-        1.0 * scaleMultiplier
-      );
+      // SE il seme è troppo lontano, inverti la direzione z (così torna indietro)
+      if (Math.abs(data.pos.z) > limitZ) {
+        data.velocity.z *= -1; // cambia direzione
+      }
+
+      // Scala controllata con limite minimo
+      let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
+      const minScale = 0.5 * scaleMultiplier;  // mai più piccolo di questo
+      const maxScale = 1.2 * scaleMultiplier;  // mai più grande di questo
+
+      scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+
+      const adjustedScaleY = scaleValue;
       const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
       // Applica posizione e scala
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // Rimuovi seme se esce dai limiti
-      if (
-        Math.abs(data.pos.x) > limitX + 3 ||
-        Math.abs(data.pos.y) > limitY + 3 ||
-        Math.abs(data.pos.z) > limitZ + 3
-      ) {
-        removeSeme(index);
-      }
+      // NON rimuovere mai i semi: lascia che si muovano avanti e indietro per sempre
     });
   }
 });
+
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>
   </body>

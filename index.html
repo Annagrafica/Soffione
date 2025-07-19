@@ -157,45 +157,50 @@
         }
       }
 
-      AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time, timeDelta) {
-          const dt = timeDelta / 1000;
-          const speedMultiplier = 10 * scaleMultiplier;
+     AFRAME.registerComponent('semi-fluttuanti', {
+  tick: function (time, timeDelta) {
+    const dt = timeDelta / 500;  // rende il movimento lento e fluido
+    const speedMultiplier = 8 * scaleMultiplier;
 
-          semiData.forEach(data => {
-            // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0005;
-            data.velocity.y += (Math.random() - 0.5) * 0.0005;
-            data.velocity.z += (Math.random() - 0.5) * 0.0005;
+    activeSemi.forEach(index => {
+      const data = semiData[index];
 
-            // Aggiorna posizione
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+      // Movimento irregolare: aggiunge leggere variazioni alle velocità
+      data.velocity.x += (Math.random() - 0.5) * 0.0002;
+      data.velocity.y += (Math.random() - 0.5) * 0.0002;
+      data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-            // Se esce, rientra dal lato opposto
-            if (data.pos.x > limitX) data.pos.x = -limitX;
-            if (data.pos.x < -limitX) data.pos.x = limitX;
-            if (data.pos.y > limitY) data.pos.y = -limitY;
-            if (data.pos.y < -limitY) data.pos.y = limitY;
-            if (data.pos.z > limitZ) data.pos.z = -limitZ;
-            if (data.pos.z < -limitZ) data.pos.z = limitZ;
+      // Limita la velocità massima per movimento morbido
+      const maxSpeed = 0.008;
+      data.velocity.x = Math.max(Math.min(data.velocity.x, maxSpeed), -maxSpeed);
+      data.velocity.y = Math.max(Math.min(data.velocity.y, maxSpeed), -maxSpeed);
+      data.velocity.z = Math.max(Math.min(data.velocity.z, maxSpeed), -maxSpeed);
 
-            // Scala proporzionale alla distanza
-            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.5 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier;
-            scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+      // Aggiorna la posizione
+      data.pos.x += data.velocity.x * dt * speedMultiplier;
+      data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            const adjustedScaleY = scaleValue;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+      // Se il seme va troppo lontano, inverti la direzione per farlo tornare
+      if (Math.abs(data.pos.x) > limitX) data.velocity.x *= -1;
+      if (Math.abs(data.pos.y) > limitY) data.velocity.y *= -1;
+      if (Math.abs(data.pos.z) > limitZ) data.velocity.z *= -1;
 
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-          });
-        }
-      });
+      // Scala controllata per non farli diventare troppo piccoli o grandi
+      let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
+      const minScale = 0.5 * scaleMultiplier; // limite minimo
+      const maxScale = 1.2 * scaleMultiplier; // limite massimo
+      scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
+      const adjustedScaleY = scaleValue;
+      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+      // Applica posizione e scala
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+    });
+  }
+});
       setLimits();
       initializeSemi();
       semiContainer.setAttribute('semi-fluttuanti', '');

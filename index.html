@@ -193,9 +193,9 @@
           });
 
           // Se meno di 5 semi visibili, sposta casualmente alcuni semi verso il centro
-          if (visibleSemi < 5) {
+          if (visibleSemi < 8) {
             semiData.forEach(data => {
-              if (visibleSemi >= 5) return;
+              if (visibleSemi >= 8) return;
               data.pos.x = (Math.random() - 0.5) * limitX * 0.8;
               data.pos.y = (Math.random() - 0.5) * limitY * 0.8;
               data.pos.z = (Math.random() - 0.5) * limitZ * 0.8;

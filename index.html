@@ -151,14 +151,14 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 800;
-          const speedMultiplier = 20 * scaleMultiplier;
+          const speedMultiplier = 25 * scaleMultiplier;
           let visibleSemi = 0;
 
           semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0004;
-            data.velocity.y += (Math.random() - 0.5) * 0.0004;
-            data.velocity.z += (Math.random() - 0.5) * 0.0004;
+            data.velocity.x += (Math.random() - 0.5) * 0.0002;
+            data.velocity.y += (Math.random() - 0.5) * 0.0002;
+            data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;

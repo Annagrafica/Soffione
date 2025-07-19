@@ -194,8 +194,8 @@
             const scaleFactor = 1 / (1 + Math.abs(data.pos.z));
             const adjustedScaleY = Math.min(
               data.baseScale * scaleFactor,
-              data.baseScale * 1.01, // Limite massimo scala
-              1.2 * scaleMultiplier // Limite assoluto
+              data.baseScale * 1.06, // Limite massimo scala
+              2.8 * scaleMultiplier // Limite assoluto
             );
             const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 

@@ -182,37 +182,44 @@
       setInterval(spawnSemi, 200);
 
       AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time, timeDelta) {
-          const dt = timeDelta / 800;
-          const speedMultiplier = 30 * scaleMultiplier;
+  tick: function (time, timeDelta) {
+    const dt = timeDelta / 800;
+    const speedMultiplier = 30 * scaleMultiplier;
 
-          activeSemi.forEach(index => {
-            const data = semiData[index];
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+    activeSemi.forEach(index => {
+      const data = semiData[index];
 
-            // Calcolo scala con limiti
-            const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const adjustedScaleY = Math.min(
-              Math.max(scaleValue, 0.6 * scaleMultiplier), // limite minimo
-              0.9 * scaleMultiplier                        // limite massimo
-            );
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+      // Aggiungo piccole variazioni casuali alle velocità per movimento non lineare
+      data.velocity.x += (Math.random() - 0.5) * 0.0005;
+      data.velocity.y += (Math.random() - 0.5) * 0.0005;
+      data.velocity.z += (Math.random() - 0.5) * 0.0005;
 
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+      // Limito la velocità massima per evitare movimenti troppo veloci
+      data.velocity.x = Math.max(Math.min(data.velocity.x, 0.02), -0.02);
+      data.velocity.y = Math.max(Math.min(data.velocity.y, 0.02), -0.02);
+      data.velocity.z = Math.max(Math.min(data.velocity.z, 0.02), -0.02);
 
-            if (
-              Math.abs(data.pos.x) > limitX + 1.5 ||
-              Math.abs(data.pos.y) > limitY + 1.5 ||
-              Math.abs(data.pos.z) > limitZ + 1.5
-            ) {
-              removeSeme(index);
-            }
-          });
-        }
-      });
+      // Aggiorno posizione
+      data.pos.x += data.velocity.x * dt * speedMultiplier;
+      data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
+
+      // Calcolo scala con limite massimo e minimo per evitare esplosioni
+      const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
+      const adjustedScaleY = Math.min(
+        Math.max(scaleValue, 0.5 * scaleMultiplier), // limite minimo
+        0.9 * scaleMultiplier                        // limite massimo
+      );
+      const adjustedScaleX = adjustedScaleY * data.aspectRatio;
+
+      // Applico posizione e scala
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+
+      // NON rimuovo i semi quando escono dallo schermo (niente esplosione)
+    });
+  }
+});
 
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>

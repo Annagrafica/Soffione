@@ -163,7 +163,7 @@
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;
             data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+data.pos.z += data.velocity.z * dt * (speedMultiplier * 0.5);
 
             // Controlla limiti
             if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x = -data.velocity.x;

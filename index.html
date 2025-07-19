@@ -99,17 +99,9 @@
         "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
       ];
 
-      let semiData = [];
-      let scaleMultiplier;
-      let limitX, limitY, limitZ;
-
-      function setLimits() {
-        const aspectRatio = window.innerWidth / window.innerHeight;
-        scaleMultiplier = (aspectRatio < 1) ? 0.7 : 1; // leggermente più piccolo sui telefoni verticali
-        limitX = 1.5 * scaleMultiplier * aspectRatio;
-        limitY = 1.5 * scaleMultiplier;
-        limitZ = 1.5 * scaleMultiplier;
-      }
+      const semiData = [];
+      const scaleMultiplier = Math.min(window.innerWidth, window.innerHeight) / 800;
+      const sphereRadius = 1.2 * scaleMultiplier;
 
       function createSeme(index) {
         const imgEl = document.getElementById(`soffione${index + 1}`);
@@ -120,12 +112,16 @@
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        const posX = (Math.random() - 0.5) * limitX * 2;
-        const posY = (Math.random() - 0.5) * limitY * 2;
-        const posZ = (Math.random() - 0.5) * limitZ * 2;
+        const angle1 = Math.random() * 2 * Math.PI;
+        const angle2 = Math.random() * Math.PI;
+        const radius = sphereRadius * Math.random() * 0.8;
+
+        const posX = radius * Math.sin(angle2) * Math.cos(angle1);
+        const posY = radius * Math.sin(angle2) * Math.sin(angle1);
+        const posZ = radius * Math.cos(angle2);
 
         img.setAttribute('position', `${posX} ${posY} ${posZ}`);
-        img.setAttribute('scale', '1 1 1');
+        img.setAttribute('scale', '0.8 0.8 0.8');
         img.setAttribute('onclick', `
           document.getElementById('nameLabel').innerText='${names[index]}';
           document.getElementById('nameLabel').style.display='block';
@@ -140,70 +136,47 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.002,
-            y: (Math.random() - 0.5) * 0.002,
-            z: (Math.random() - 0.5) * 0.002
+            x: (Math.random() - 0.5) * 0.0005,
+            y: (Math.random() - 0.5) * 0.0005,
+            z: (Math.random() - 0.5) * 0.0005
           },
-          baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
           aspectRatio: aspect
         };
       }
 
-      function initializeSemi() {
-        semiContainer.innerHTML = "";
-        semiData = [];
-        for (let i = 0; i < totalSemi; i++) {
-          createSeme(i);
-        }
+      for (let i = 0; i < totalSemi; i++) {
+        createSeme(i);
       }
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 8 * scaleMultiplier;
 
           semiData.forEach(data => {
-            // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0005;
-            data.velocity.y += (Math.random() - 0.5) * 0.0005;
-            data.velocity.z += (Math.random() - 0.5) * 0.0005;
+            // Aggiorna velocità
+            data.pos.x += data.velocity.x * dt;
+            data.pos.y += data.velocity.y * dt;
+            data.pos.z += data.velocity.z * dt;
 
-            // Aggiorna posizione
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+            // Se esce dalla sfera, inverti la velocità
+            const dist = Math.sqrt(
+              data.pos.x ** 2 + data.pos.y ** 2 + data.pos.z ** 2
+            );
+            if (dist > sphereRadius) {
+              data.velocity.x *= -1;
+              data.velocity.y *= -1;
+              data.velocity.z *= -1;
+            }
 
-            // Mantieni i semi sempre dentro i limiti
-            if (data.pos.x > limitX) data.pos.x = -limitX;
-            if (data.pos.x < -limitX) data.pos.x = limitX;
-            if (data.pos.y > limitY) data.pos.y = -limitY;
-            if (data.pos.y < -limitY) data.pos.y = limitY;
-            if (data.pos.z > limitZ) data.pos.z = -limitZ;
-            if (data.pos.z < -limitZ) data.pos.z = limitZ;
-
-            // Scala proporzionale alla distanza
-            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.5 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier;
-            scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
-
-            const adjustedScaleY = scaleValue;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
-
+            // Aggiorna posizione e scala
+            let scaleValue = 0.5 + 0.5 * (1 - dist / sphereRadius);
             data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
+            data.el.setAttribute('scale', `${scaleValue * data.aspectRatio} ${scaleValue} ${scaleValue}`);
           });
         }
       });
 
-      setLimits();
-      initializeSemi();
       semiContainer.setAttribute('semi-fluttuanti', '');
-
-      window.addEventListener('resize', () => {
-        setLimits();
-        initializeSemi();
-      });
     </script>
   </body>
 </html>

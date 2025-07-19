@@ -189,26 +189,32 @@
     activeSemi.forEach(index => {
       const data = semiData[index];
 
-      // Movimento con variazioni casuali per traiettorie morbide e irregolari
+      // Variazioni casuali per movimenti morbidi
       data.velocity.x += (Math.random() - 0.5) * 0.0005;
       data.velocity.y += (Math.random() - 0.5) * 0.0005;
-      data.velocity.z += (Math.random() - 0.5) * 0.0005;
+      // NON modifico direttamente velocity.z per far oscillare z in modo indipendente
 
-      // Limita velocità per non andare troppo veloci
+      // Limita velocità
       data.velocity.x = Math.max(Math.min(data.velocity.x, 0.02), -0.02);
       data.velocity.y = Math.max(Math.min(data.velocity.y, 0.02), -0.02);
-      data.velocity.z = Math.max(Math.min(data.velocity.z, 0.02), -0.02);
 
-      // Aggiorna posizione
+      // Aggiorna posizione x e y
       data.pos.x += data.velocity.x * dt * speedMultiplier;
       data.pos.y += data.velocity.y * dt * speedMultiplier;
-      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Scala con limiti morbidi, senza "esplosioni"
+      // Ora gestiamo oscillazione casuale della profondità (pos.z)
+      // Usa una funzione sinusoidale combinata con rumore casuale per oscillare avanti e indietro
+      const oscillationSpeed = 0.0015; // velocità oscillazione z
+      const oscillationRange = 1.0;    // ampiezza oscillazione z
+
+      // Calcola nuova z con oscillazione attorno al valore corrente
+      data.pos.z = data.pos.z + Math.sin(time * oscillationSpeed + index) * oscillationRange * dt;
+
+      // Scala con limiti morbidi
       const scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
       const adjustedScaleY = Math.min(
-        Math.max(scaleValue, 0.4 * scaleMultiplier),  // limite minimo (piccolo)
-        1.2 * scaleMultiplier                         // limite massimo (non troppo grande)
+        Math.max(scaleValue, 0.4 * scaleMultiplier),
+        1.2 * scaleMultiplier
       );
       const adjustedScaleX = adjustedScaleY * data.aspectRatio;
 
@@ -216,7 +222,7 @@
       data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
       data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
 
-      // Rimuovi seme se esce fuori dai limiti dello schermo
+      // Rimuovi se esce dai limiti
       if (
         Math.abs(data.pos.x) > limitX + 1.5 ||
         Math.abs(data.pos.y) > limitY + 1.5 ||

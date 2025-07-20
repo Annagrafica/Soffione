@@ -135,9 +135,9 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.0005,
-            y: (Math.random() - 0.5) * 0.0005,
-            z: (Math.random() - 0.5) * 0.0005
+            x: (Math.random() - 0.5) * 0.005,
+            y: (Math.random() - 0.5) * 0.005,
+            z: (Math.random() - 0.5) * 0.005
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
           aspectRatio: aspect
@@ -154,9 +154,9 @@
           const speedMultiplier = 20 * scaleMultiplier;
 
           semiData.forEach(data => {
-            data.velocity.x += (Math.random() - 0.5) * 0.0002;
-            data.velocity.y += (Math.random() - 0.5) * 0.0002;
-            data.velocity.z += (Math.random() - 0.5) * 0.0002;
+            data.velocity.x += (Math.random() - 0.5) * 0.0003;
+            data.velocity.y += (Math.random() - 0.5) * 0.0003;
+            data.velocity.z += (Math.random() - 0.5) * 0.0003;
 
             // Movimento normale
             data.pos.x += data.velocity.x * dt * speedMultiplier;

@@ -101,7 +101,6 @@
 
       const semiData = [];
 
-      // Nuovo calcolo per portrait/landscape
       const aspectRatio = window.innerWidth / window.innerHeight;
       const scaleMultiplier = 1;
       const limitX = (aspectRatio < 1 ? 1.8 : 2.5) * scaleMultiplier;
@@ -137,16 +136,15 @@
           el: img,
           pos: { x: posX, y: posY, z: posZ },
           velocity: {
-            x: (Math.random() - 0.5) * 0.001,
-            y: (Math.random() - 0.5) * 0.001,
-            z: (Math.random() - 0.5) * 0.001
+            x: (Math.random() - 0.5) * 0.0005,
+            y: (Math.random() - 0.5) * 0.0005,
+            z: (Math.random() - 0.5) * 0.0005
           },
-          baseScale: (0.8 + Math.random() * 0.3) * scaleMultiplier, // semi più piccoli
+          baseScale: (0.7 + Math.random() * 0.3) * scaleMultiplier, // più piccoli
           aspectRatio: aspect
         };
       }
 
-      // Crea tutti i semi
       for (let i = 0; i < totalSemi; i++) {
         createSeme(i);
       }
@@ -154,33 +152,24 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 15 * scaleMultiplier; // più lento e fluido
-          semiData.forEach(data => {
-            // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0001;
-            data.velocity.y += (Math.random() - 0.5) * 0.0001;
-            data.velocity.z += (Math.random() - 0.5) * 0.0001;
+          const speedMultiplier = 25 * scaleMultiplier; // più lento
 
-            // Aggiorna posizione
+          semiData.forEach(data => {
+            data.velocity.x += (Math.random() - 0.5) * 0.0002;
+            data.velocity.y += (Math.random() - 0.5) * 0.0002;
+            data.velocity.z += (Math.random() - 0.5) * 0.0002;
+
             data.pos.x += data.velocity.x * dt * speedMultiplier;
             data.pos.y += data.velocity.y * dt * speedMultiplier;
+            data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-            if (data.pos.z < 1.0) {
-              data.pos.z = 1.0; // evita semi troppo vicini
-              data.velocity.z = Math.abs(data.velocity.z) * 0.5; // rallenta
-            } else {
-              data.pos.z += data.velocity.z * dt * speedMultiplier;
-            }
-
-            // Controlla limiti
             if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x = -data.velocity.x;
             if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y = -data.velocity.y;
             if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z = -data.velocity.z;
 
-            // Scala proporzionale alla distanza
-            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z)));
-            const minScale = 0.6 * scaleMultiplier;
-            const maxScale = 1.2 * scaleMultiplier; // semi massimo delicati
+            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.5)));
+            const minScale = 0.5 * scaleMultiplier;
+            const maxScale = 1.2 * scaleMultiplier; // semi massimo piccoli
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

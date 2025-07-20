@@ -173,7 +173,9 @@
           });
       }
 
-      startButton.addEventListener('click', startSemi);
+      startButton.addEventListener('click', () => {
+        window.onload = startSemi;
+      });
     </script>
   </body>
 </html>

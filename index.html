@@ -155,9 +155,9 @@
           const speedMultiplier = 25 * scaleMultiplier; // più lento
 
           semiData.forEach(data => {
-            data.velocity.x += (Math.random() - 0.5) * 0.0003;
-            data.velocity.y += (Math.random() - 0.5) * 0.0003;
-            data.velocity.z += (Math.random() - 0.5) * 0.0003;
+            data.velocity.x += (Math.random() - 0.5) * 0.0002;
+            data.velocity.y += (Math.random() - 0.5) * 0.0002;
+            data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
             data.pos.x += data.velocity.x * dt * speedMultiplier;
             data.pos.y += data.velocity.y * dt * speedMultiplier;
@@ -169,7 +169,7 @@
 
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.5)));
             const minScale = 0.7 * scaleMultiplier;
-            const maxScale = 1.5 * scaleMultiplier; // semi massimo piccoli
+            const maxScale = 1.2 * scaleMultiplier; // semi massimo piccoli
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
             const adjustedScaleY = scaleValue;

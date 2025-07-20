@@ -168,7 +168,7 @@
             if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z = -data.velocity.z;
 
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.5)));
-            const minScale = 0.9 * scaleMultiplier;
+            const minScale = 1.0 * scaleMultiplier;
             const maxScale = 1.3 * scaleMultiplier; // semi massimo piccoli
             scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 

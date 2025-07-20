@@ -154,7 +154,7 @@
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
-          const speedMultiplier = 10 * scaleMultiplier; // più lento e fluido
+          const speedMultiplier = 25 * scaleMultiplier; // più lento e fluido
           semiData.forEach(data => {
             // Movimento irregolare
             data.velocity.x += (Math.random() - 0.5) * 0.0001;

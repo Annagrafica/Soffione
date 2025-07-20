@@ -45,7 +45,7 @@
       <a-assets>
         <!-- 28 immagini soffione -->
         ${Array.from({length: 28}, (_, i) => 
-          `<img id="soffione${i+1}" src="assets/soffione${i+1}.png" />`).join('')}
+          `<img id="soffione${i+1}" src="assets/soffione${i+1}.png" crossorigin="anonymous"/>`).join('')}
       </a-assets>
 
       <a-entity id="semiContainer"></a-entity>
@@ -81,15 +81,12 @@
       const limitZ = 2.5 * scaleMultiplier;
 
       function createSeme(index) {
-        const imgEl = document.getElementById(`soffione${index + 1}`);
-        const aspect = imgEl.naturalWidth / imgEl.naturalHeight;
-
         const img = document.createElement('a-image');
         img.setAttribute('src', `#soffione${index + 1}`);
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-        // semi partono vicini al centro
+        // Partenza vicino al centro
         const posX = (Math.random() - 0.5) * limitX * 0.3;
         const posY = (Math.random() - 0.5) * limitY * 0.3;
         const posZ = (Math.random() - 0.5) * limitZ * 0.3;
@@ -115,50 +112,38 @@
             z: (Math.random() - 0.5) * 0.01
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: aspect
+          aspectRatio: 1 // semplifico per compatibilità
         };
       }
 
-      // Aspetta che tutte le immagini siano caricate prima di creare i semi
-      window.addEventListener('load', () => {
-        for (let i = 0; i < totalSemi; i++) {
-          createSeme(i);
+      for (let i = 0; i < totalSemi; i++) {
+        createSeme(i);
+      }
+
+      AFRAME.registerComponent('semi-fluttuanti', {
+        tick: function (time, timeDelta) {
+          const dt = timeDelta / 1000;
+          const speedMultiplier = 20 * scaleMultiplier;
+
+          semiData.forEach(data => {
+            data.velocity.x += (Math.random() - 0.5) * 0.0002;
+            data.velocity.y += (Math.random() - 0.5) * 0.0002;
+            data.velocity.z += (Math.random() - 0.5) * 0.0002;
+
+            data.pos.x += data.velocity.x * dt * speedMultiplier;
+            data.pos.y += data.velocity.y * dt * speedMultiplier;
+            data.pos.z += data.velocity.z * dt * speedMultiplier;
+
+            if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
+            if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
+            if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
+
+            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+          });
         }
-
-        AFRAME.registerComponent('semi-fluttuanti', {
-          tick: function (time, timeDelta) {
-            const dt = timeDelta / 1000;
-            const speedMultiplier = 20 * scaleMultiplier;
-
-            semiData.forEach(data => {
-              data.velocity.x += (Math.random() - 0.5) * 0.0002;
-              data.velocity.y += (Math.random() - 0.5) * 0.0002;
-              data.velocity.z += (Math.random() - 0.5) * 0.0002;
-
-              data.pos.x += data.velocity.x * dt * speedMultiplier;
-              data.pos.y += data.velocity.y * dt * speedMultiplier;
-              data.pos.z += data.velocity.z * dt * speedMultiplier;
-
-              if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
-              if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
-              if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
-
-              let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.2)));
-              const minScale = 1.0 * scaleMultiplier;
-              const maxScale = 1.4 * scaleMultiplier;
-              scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
-
-              const adjustedScaleY = scaleValue;
-              const adjustedScaleX = adjustedScaleY * data.aspectRatio;
-
-              data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-              data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-            });
-          }
-        });
-
-        semiContainer.setAttribute('semi-fluttuanti', '');
       });
+
+      semiContainer.setAttribute('semi-fluttuanti', '');
     </script>
   </body>
 </html>

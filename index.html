@@ -157,9 +157,9 @@
           const speedMultiplier = 25 * scaleMultiplier; // più lento e fluido
           semiData.forEach(data => {
             // Movimento irregolare
-            data.velocity.x += (Math.random() - 0.5) * 0.0001;
-            data.velocity.y += (Math.random() - 0.5) * 0.0001;
-            data.velocity.z += (Math.random() - 0.5) * 0.0001;
+            data.velocity.x += (Math.random() - 0.5) * 0.0005;
+            data.velocity.y += (Math.random() - 0.5) * 0.0005;
+            data.velocity.z += (Math.random() - 0.5) * 0.0005;
 
             // Aggiorna posizione
             data.pos.x += data.velocity.x * dt * speedMultiplier;

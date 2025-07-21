@@ -42,6 +42,38 @@
     <video id="webcamVideo" autoplay playsinline muted></video>
 
     <a-scene embedded>
+      <a-assets>
+        <!-- 28 immagini soffione -->
+        <img id="soffione1" src="assets/soffione1.png" />
+        <img id="soffione2" src="assets/soffione2.png" />
+        <img id="soffione3" src="assets/soffione3.png" />
+        <img id="soffione4" src="assets/soffione4.png" />
+        <img id="soffione5" src="assets/soffione5.png" />
+        <img id="soffione6" src="assets/soffione6.png" />
+        <img id="soffione7" src="assets/soffione7.png" />
+        <img id="soffione8" src="assets/soffione8.png" />
+        <img id="soffione9" src="assets/soffione9.png" />
+        <img id="soffione10" src="assets/soffione10.png" />
+        <img id="soffione11" src="assets/soffione11.png" />
+        <img id="soffione12" src="assets/soffione12.png" />
+        <img id="soffione13" src="assets/soffione13.png" />
+        <img id="soffione14" src="assets/soffione14.png" />
+        <img id="soffione15" src="assets/soffione15.png" />
+        <img id="soffione16" src="assets/soffione16.png" />
+        <img id="soffione17" src="assets/soffione17.png" />
+        <img id="soffione18" src="assets/soffione18.png" />
+        <img id="soffione19" src="assets/soffione19.png" />
+        <img id="soffione20" src="assets/soffione20.png" />
+        <img id="soffione21" src="assets/soffione21.png" />
+        <img id="soffione22" src="assets/soffione22.png" />
+        <img id="soffione23" src="assets/soffione23.png" />
+        <img id="soffione24" src="assets/soffione24.png" />
+        <img id="soffione25" src="assets/soffione25.png" />
+        <img id="soffione26" src="assets/soffione26.png" />
+        <img id="soffione27" src="assets/soffione27.png" />
+        <img id="soffione28" src="assets/soffione28.png" />
+      </a-assets>
+
       <a-entity id="semiContainer"></a-entity>
       <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
@@ -73,18 +105,27 @@
       const limitY = 2.0 * scaleMultiplier;
       const limitZ = 2.5 * scaleMultiplier;
 
+      // Variabile per bloccare/sbloccare il movimento del primo seme
+      let primiSemiArrivati = false;
+
       function createSeme(index, centered = false) {
+        const imgEl = document.getElementById(`soffione${index + 1}`);
+        const aspect = imgEl.naturalWidth / imgEl.naturalHeight || 1;
+
         const img = document.createElement('a-image');
-        img.setAttribute('src', `assets/soffione${index + 1}.png`);
+        img.setAttribute('src', `#soffione${index + 1}`);
         img.setAttribute('rotation', '0 0 0');
         img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
         let posX, posY, posZ;
+
         if (centered) {
+          // Primo seme centrato, davanti e visibile
           posX = 0;
           posY = 0;
           posZ = -1;
         } else {
+          // Altri semi vicino al centro, posizioni casuali
           posX = (Math.random() - 0.5) * limitX * 0.6;
           posY = (Math.random() - 0.5) * limitY * 0.6;
           posZ = (Math.random() - 0.5) * limitZ * 0.6;
@@ -111,19 +152,20 @@
             z: (Math.random() - 0.5) * 0.01
           },
           baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: 1
+          aspectRatio: aspect
         };
       }
 
-      // Mostra subito il primo seme
+      // Crea il primo seme centrato subito
       createSeme(0, true);
 
-      // Dopo 300ms aggiunge altri 4 semi
+      // Dopo 300ms crea altri 4 semi e sblocca il primo seme
       setTimeout(() => {
         [1, 2, 3, 4].forEach(i => createSeme(i, false));
+        primiSemiArrivati = true; // sblocca movimento libero del primo seme
       }, 300);
 
-      // Carica gradualmente gli altri semi
+      // Aggiunge gradualmente gli altri semi
       let remainingIndices = [...Array(totalSemi).keys()].slice(5);
       let loadInterval = setInterval(() => {
         if (remainingIndices.length === 0) {
@@ -132,26 +174,42 @@
           const next = remainingIndices.shift();
           createSeme(next, false);
         }
-      }, 400);
+      }, 400); // un seme ogni 0.4 secondi
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {
           const dt = timeDelta / 1000;
           const speedMultiplier = 20 * scaleMultiplier;
 
-          semiData.forEach(data => {
+          semiData.forEach((data, index) => {
+            // Cambiamenti piccoli casuali in velocità
             data.velocity.x += (Math.random() - 0.5) * 0.0002;
             data.velocity.y += (Math.random() - 0.5) * 0.0002;
             data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-            data.pos.x += data.velocity.x * dt * speedMultiplier;
-            data.pos.y += data.velocity.y * dt * speedMultiplier;
-            data.pos.z += data.velocity.z * dt * speedMultiplier;
+            if (index === 0 && !primiSemiArrivati) {
+              // Primo seme: muovi solo dentro zona ristretta finché gli altri non arrivano
+              const limitSmall = 0.6;
 
-            if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
-            if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
-            if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
+              data.pos.x += data.velocity.x * dt * speedMultiplier;
+              data.pos.y += data.velocity.y * dt * speedMultiplier;
+              data.pos.z += data.velocity.z * dt * speedMultiplier;
 
+              if (Math.abs(data.pos.x) > limitSmall) data.velocity.x = -data.velocity.x;
+              if (Math.abs(data.pos.y) > limitSmall) data.velocity.y = -data.velocity.y;
+              if (Math.abs(data.pos.z) > limitSmall) data.velocity.z = -data.velocity.z;
+            } else {
+              // Altri semi e primo sbloccato: movimento libero con spinta al centro se escono troppo
+              data.pos.x += data.velocity.x * dt * speedMultiplier;
+              data.pos.y += data.velocity.y * dt * speedMultiplier;
+              data.pos.z += data.velocity.z * dt * speedMultiplier;
+
+              if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
+              if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
+              if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
+            }
+
+            // Scala proporzionata in base a profondità (pos.z)
             let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.2)));
             const minScale = 1.0 * scaleMultiplier;
             const maxScale = 1.4 * scaleMultiplier;

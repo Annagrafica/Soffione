@@ -176,54 +176,53 @@
         }
       }, 400); // un seme ogni 0.4 secondi
 
-      AFRAME.registerComponent('semi-fluttuanti', {
-        tick: function (time, timeDelta) {
-          const dt = timeDelta / 1000;
-          const speedMultiplier = 20 * scaleMultiplier;
+       AFRAME.registerComponent('semi-fluttuanti', {
+    tick: function (time, timeDelta) {
+      const dt = timeDelta / 1000;
+      const speedMultiplier = 20 * scaleMultiplier;
 
-          semiData.forEach((data, index) => {
-            // Cambiamenti piccoli casuali in velocità
-            data.velocity.x += (Math.random() - 0.5) * 0.0002;
-            data.velocity.y += (Math.random() - 0.5) * 0.0002;
-            data.velocity.z += (Math.random() - 0.5) * 0.0002;
+      semiData.forEach((data, index) => {
+        // Cambiamenti piccoli casuali in velocità
+        data.velocity.x += (Math.random() - 0.5) * 0.0002;
+        data.velocity.y += (Math.random() - 0.5) * 0.0002;
+        data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-            if (index === 0 && !primiSemiArrivati) {
-              // Primo seme: muovi solo dentro zona ristretta finché gli altri non arrivano
-              const limitSmall = 0.6;
+        if (index === 0 && !primiSemiArrivati) {
+          const limitSmall = 0.6;
 
-              data.pos.x += data.velocity.x * dt * speedMultiplier;
-              data.pos.y += data.velocity.y * dt * speedMultiplier;
-              data.pos.z += data.velocity.z * dt * speedMultiplier;
+          data.pos.x += data.velocity.x * dt * speedMultiplier;
+          data.pos.y += data.velocity.y * dt * speedMultiplier;
+          data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-              if (Math.abs(data.pos.x) > limitSmall) data.velocity.x = -data.velocity.x;
-              if (Math.abs(data.pos.y) > limitSmall) data.velocity.y = -data.velocity.y;
-              if (Math.abs(data.pos.z) > limitSmall) data.velocity.z = -data.velocity.z;
-            } else {
-              // Altri semi e primo sbloccato: movimento libero con spinta al centro se escono troppo
-              data.pos.x += data.velocity.x * dt * speedMultiplier;
-              data.pos.y += data.velocity.y * dt * speedMultiplier;
-              data.pos.z += data.velocity.z * dt * speedMultiplier;
+          if (Math.abs(data.pos.x) > limitSmall) data.velocity.x = -data.velocity.x;
+          if (Math.abs(data.pos.y) > limitSmall) data.velocity.y = -data.velocity.y;
+          if (Math.abs(data.pos.z) > limitSmall) data.velocity.z = -data.velocity.z;
+        } else {
+          data.pos.x += data.velocity.x * dt * speedMultiplier;
+          data.pos.y += data.velocity.y * dt * speedMultiplier;
+          data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-              if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
-              if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
-              if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
-            }
-
-            // Scala proporzionata in base a profondità (pos.z)
-            let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.2)));
-            const minScale = 1.0 * scaleMultiplier;
-            const maxScale = 1.4 * scaleMultiplier;
-            scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
-
-            const adjustedScaleY = scaleValue;
-            const adjustedScaleX = adjustedScaleY * data.aspectRatio;
-
-            data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-            data.el.setAttribute('scale', `${adjustedScaleX} ${adjustedScaleY} ${adjustedScaleY}`);
-          });
+          if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
+          if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
+          if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
         }
-      });
 
+        // Calcolo scala con mantenimento proporzioni
+        let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.2)));
+        const minScale = 1.0 * scaleMultiplier;
+        const maxScale = 1.4 * scaleMultiplier;
+        scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+
+        const scaleY = scaleValue;
+        const scaleX = scaleY * data.aspectRatio;
+
+        data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+        data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
+      });
+    }
+  });
+
+  semiContainer.setAttribute('semi-fluttuanti', '');
       semiContainer.setAttribute('semi-fluttuanti', '');
     </script>
   </body>

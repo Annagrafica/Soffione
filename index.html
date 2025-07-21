@@ -144,16 +144,16 @@
         };
       }
 
-      // Mostra subito 5 semi casuali
-      const initialIndices = [];
-      while (initialIndices.length < 5) {
-        let rand = Math.floor(Math.random() * totalSemi);
-        if (!initialIndices.includes(rand)) initialIndices.push(rand);
-      }
-      initialIndices.forEach(i => createSeme(i));
+      // Mostra subito 1 seme
+      createSeme(0);
 
-      // Carica gli altri semi gradualmente
-      let remainingIndices = [...Array(totalSemi).keys()].filter(i => !initialIndices.includes(i));
+      // Dopo 500ms mostra altri 4 semi
+      setTimeout(() => {
+        [1, 2, 3, 4].forEach(i => createSeme(i));
+      }, 500);
+
+      // Carica i restanti semi gradualmente
+      let remainingIndices = [...Array(totalSemi).keys()].slice(5);
       let loadInterval = setInterval(() => {
         if (remainingIndices.length === 0) {
           clearInterval(loadInterval);
@@ -161,7 +161,7 @@
           const next = remainingIndices.shift();
           createSeme(next);
         }
-      }, 500); // aggiunge 1 seme ogni 0.5s
+      }, 400); // aggiunge 1 seme ogni 0.4s
 
       AFRAME.registerComponent('semi-fluttuanti', {
         tick: function (time, timeDelta) {

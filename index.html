@@ -181,44 +181,54 @@
       const dt = timeDelta / 1000;
       const speedMultiplier = 20 * scaleMultiplier;
 
-      semiData.forEach((data, index) => {
-        // Cambiamenti piccoli casuali in velocità
-        data.velocity.x += (Math.random() - 0.5) * 0.0002;
-        data.velocity.y += (Math.random() - 0.5) * 0.0002;
-        data.velocity.z += (Math.random() - 0.5) * 0.0002;
+   semiData.forEach((data, index) => {
+  // Aggiungo piccola variazione casuale
+  data.velocity.x += (Math.random() - 0.5) * 0.0002;
+  data.velocity.y += (Math.random() - 0.5) * 0.0002;
+  data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-        if (index === 0 && !primiSemiArrivati) {
-          const limitSmall = 0.6;
+  // Limito la velocità massima
+  const maxVel = 0.02;  // puoi regolare questo valore
+  data.velocity.x = Math.max(Math.min(data.velocity.x, maxVel), -maxVel);
+  data.velocity.y = Math.max(Math.min(data.velocity.y, maxVel), -maxVel);
+  data.velocity.z = Math.max(Math.min(data.velocity.z, maxVel), -maxVel);
 
-          data.pos.x += data.velocity.x * dt * speedMultiplier;
-          data.pos.y += data.velocity.y * dt * speedMultiplier;
-          data.pos.z += data.velocity.z * dt * speedMultiplier;
+  // Movimento
+  data.pos.x += data.velocity.x * dt * speedMultiplier;
+  data.pos.y += data.velocity.y * dt * speedMultiplier;
+  data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-          if (Math.abs(data.pos.x) > limitSmall) data.velocity.x = -data.velocity.x;
-          if (Math.abs(data.pos.y) > limitSmall) data.velocity.y = -data.velocity.y;
-          if (Math.abs(data.pos.z) > limitSmall) data.velocity.z = -data.velocity.z;
-        } else {
-          data.pos.x += data.velocity.x * dt * speedMultiplier;
-          data.pos.y += data.velocity.y * dt * speedMultiplier;
-          data.pos.z += data.velocity.z * dt * speedMultiplier;
+  // Limiti per non andare troppo lontano
+  const maxPosX = limitX * 0.8; // più vicino del limite totale
+  const maxPosY = limitY * 0.8;
+  const maxPosZ = limitZ * 0.8;
 
-          if (Math.abs(data.pos.x) > limitX * 1.2) data.velocity.x -= Math.sign(data.pos.x) * 0.0003;
-          if (Math.abs(data.pos.y) > limitY * 1.2) data.velocity.y -= Math.sign(data.pos.y) * 0.0003;
-          if (Math.abs(data.pos.z) > limitZ * 1.2) data.velocity.z -= Math.sign(data.pos.z) * 0.0003;
-        }
+  if (Math.abs(data.pos.x) > maxPosX) {
+    data.velocity.x = -data.velocity.x * 0.8; // rimbalzo con riduzione velocità
+    data.pos.x = Math.sign(data.pos.x) * maxPosX;
+  }
+  if (Math.abs(data.pos.y) > maxPosY) {
+    data.velocity.y = -data.velocity.y * 0.8;
+    data.pos.y = Math.sign(data.pos.y) * maxPosY;
+  }
+  if (Math.abs(data.pos.z) > maxPosZ) {
+    data.velocity.z = -data.velocity.z * 0.8;
+    data.pos.z = Math.sign(data.pos.z) * maxPosZ;
+  }
 
-        // Calcolo scala con mantenimento proporzioni
-        let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 1.2)));
-        const minScale = 1.0 * scaleMultiplier;
-        const maxScale = 1.4 * scaleMultiplier;
-        scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+  // Scala proporzionata
+  let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 0.9)));
+  const minScale = 1.0 * scaleMultiplier;
+  const maxScale = 1.3 * scaleMultiplier;
+  scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
-        const scaleY = scaleValue;
-        const scaleX = scaleY * data.aspectRatio;
+  const scaleY = scaleValue;
+  const scaleX = scaleY * data.aspectRatio;
 
-        data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-        data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
-      });
+  data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+  data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
+});
+
     }
   });
 

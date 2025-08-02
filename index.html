@@ -78,162 +78,187 @@
       <a-entity camera position="0 1.6 0"></a-entity>
     </a-scene>
 
-    <script>
-      const video = document.getElementById('webcamVideo');
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          video.srcObject = stream;
-          video.play();
-        })
-        .catch(err => {
-          console.error('Errore accesso webcam:', err);
-        });
+<script>
+  const video = document.getElementById('webcamVideo');
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
+    })
+    .catch(err => {
+      console.error('Errore accesso webcam:', err);
+    });
 
-      const semiContainer = document.querySelector('#semiContainer');
-      const totalSemi = 28;
-      const names = [
-        "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
-        "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
-        "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
-        "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
-        "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
-      ];
+  const semiContainer = document.querySelector('#semiContainer');
+  const totalSemi = 28;
+  const names = [
+    "Nicola", "Denny", "Vadim", "Dimitri", "Peppino", "Gioele",
+    "Laura", "Marina", "Nina", "Alessandro", "Nicola", "Valentina",
+    "Ivan", "Galina", "Bartolo", "Olga", "Igor", "Lidia",
+    "Capitalina", "Dimitri", "Ludmila", "Anna", "Padre Gennadij",
+    "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
+  ];
 
-      const semiData = [];
-      const scaleMultiplier = 1;
-      const limitX = 2.5 * scaleMultiplier;
-      const limitY = 2.0 * scaleMultiplier;
-      const limitZ = 2.5 * scaleMultiplier;
+  const semiData = [];
+  const scaleMultiplier = 1;
 
-      // Variabile per bloccare/sbloccare il movimento del primo seme
-      let primiSemiArrivati = false;
+  let limitX, limitY, limitZ;
 
-      function createSeme(index, centered = false) {
-        const imgEl = document.getElementById(`soffione${index + 1}`);
-        const aspect = imgEl.naturalWidth / imgEl.naturalHeight || 1;
+  function calcolaLimitiDinamici() {
+    const rapporto = window.innerWidth / window.innerHeight;
+    let baseX = 2.5;
+    let baseY = 2.0;
+    let baseZ = 2.5;
 
-        const img = document.createElement('a-image');
-        img.setAttribute('src', `#soffione${index + 1}`);
-        img.setAttribute('rotation', '0 0 0');
-        img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
+    if (rapporto > 1) {
+      baseX *= 1.4;
+      baseY *= 0.9;
+    } else {
+      baseX *= 0.9;
+      baseY *= 1.4;
+    }
 
-        let posX, posY, posZ;
+    return {
+      x: baseX * scaleMultiplier,
+      y: baseY * scaleMultiplier,
+      z: baseZ * scaleMultiplier
+    };
+  }
 
-        if (centered) {
-          // Primo seme centrato, davanti e visibile
-          posX = 0;
-          posY = 0;
-          posZ = -1;
-        } else {
-          // Altri semi vicino al centro, posizioni casuali
-          posX = (Math.random() - 0.5) * limitX * 0.6;
-          posY = (Math.random() - 0.5) * limitY * 0.6;
-          posZ = (Math.random() - 0.5) * limitZ * 0.6;
-        }
+  function aggiornaLimiti() {
+    const limiti = calcolaLimitiDinamici();
+    limitX = limiti.x;
+    limitY = limiti.y;
+    limitZ = limiti.z;
+  }
 
-        img.setAttribute('position', `${posX} ${posY} ${posZ}`);
-        img.setAttribute('scale', '1 1 1');
-        img.setAttribute('onclick', `
-          document.getElementById('nameLabel').innerText='${names[index]}';
-          document.getElementById('nameLabel').style.display='block';
-          setTimeout(() => {
-            document.getElementById('nameLabel').style.display='none';
-          }, 2000);
-        `);
+  aggiornaLimiti();
+  window.addEventListener('resize', aggiornaLimiti);
 
-        semiContainer.appendChild(img);
+  function loadImage(imgId) {
+    return new Promise((resolve) => {
+      const img = document.getElementById(imgId);
+      if (img.complete) resolve();
+      else img.onload = () => resolve();
+    });
+  }
 
-        semiData[index] = {
-          el: img,
-          pos: { x: posX, y: posY, z: posZ },
-          velocity: {
-            x: (Math.random() - 0.5) * 0.01,
-            y: (Math.random() - 0.5) * 0.01,
-            z: (Math.random() - 0.5) * 0.01
-          },
-          baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
-          aspectRatio: aspect
-        };
-      }
+  function createSeme(index, centered = false) {
+    const imgEl = document.getElementById(`soffione${index + 1}`);
+    const aspect = imgEl.naturalWidth / imgEl.naturalHeight || 1;
 
-      // Crea il primo seme centrato subito
-      createSeme(0, true);
+    const img = document.createElement('a-image');
+    img.setAttribute('src', `#soffione${index + 1}`);
+    img.setAttribute('rotation', '0 0 0');
+    img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
-      // Dopo 300ms crea altri 4 semi e sblocca il primo seme
+    let posX, posY, posZ;
+    if (centered) {
+      posX = 0; posY = 0; posZ = -1;
+    } else {
+      posX = (Math.random() - 0.5) * limitX * 0.6;
+      posY = (Math.random() - 0.5) * limitY * 0.6;
+      posZ = (Math.random() - 0.5) * limitZ * 0.6;
+    }
+
+    img.setAttribute('position', `${posX} ${posY} ${posZ}`);
+    img.setAttribute('scale', '1 1 1');
+    img.setAttribute('onclick', `
+      document.getElementById('nameLabel').innerText='${names[index]}';
+      document.getElementById('nameLabel').style.display='block';
       setTimeout(() => {
-        [1, 2, 3, 4].forEach(i => createSeme(i, false));
-        primiSemiArrivati = true; // sblocca movimento libero del primo seme
-      }, 300);
+        document.getElementById('nameLabel').style.display='none';
+      }, 2000);
+    `);
 
-      // Aggiunge gradualmente gli altri semi
-      let remainingIndices = [...Array(totalSemi).keys()].slice(5);
-      let loadInterval = setInterval(() => {
-        if (remainingIndices.length === 0) {
-          clearInterval(loadInterval);
-        } else {
-          const next = remainingIndices.shift();
-          createSeme(next, false);
-        }
-      }, 400); // un seme ogni 0.4 secondi
+    semiContainer.appendChild(img);
 
-       AFRAME.registerComponent('semi-fluttuanti', {
+    semiData[index] = {
+      el: img,
+      pos: { x: posX, y: posY, z: posZ },
+      velocity: {
+        x: (Math.random() - 0.5) * 0.01,
+        y: (Math.random() - 0.5) * 0.01,
+        z: (Math.random() - 0.5) * 0.01
+      },
+      baseScale: (1 + Math.random() * 0.5) * scaleMultiplier,
+      aspectRatio: aspect
+    };
+  }
+
+  async function avvia() {
+    const promises = [];
+    for (let i = 1; i <= totalSemi; i++) {
+      promises.push(loadImage(`soffione${i}`));
+    }
+    await Promise.all(promises);
+
+    createSeme(0, true);
+
+    setTimeout(() => {
+      [1, 2, 3, 4].forEach(i => createSeme(i));
+    }, 300);
+
+    let remainingIndices = [...Array(totalSemi).keys()].slice(5);
+    let loadInterval = setInterval(() => {
+      if (remainingIndices.length === 0) clearInterval(loadInterval);
+      else createSeme(remainingIndices.shift());
+    }, 400);
+  }
+
+  avvia();
+
+  AFRAME.registerComponent('semi-fluttuanti', {
     tick: function (time, timeDelta) {
       const dt = timeDelta / 1000;
       const speedMultiplier = 20 * scaleMultiplier;
 
-   semiData.forEach((data, index) => {
-  // Aggiungo piccola variazione casuale
-  data.velocity.x += (Math.random() - 0.5) * 0.0002;
-  data.velocity.y += (Math.random() - 0.5) * 0.0002;
-  data.velocity.z += (Math.random() - 0.5) * 0.0002;
+      semiData.forEach((data) => {
+        data.velocity.x += (Math.random() - 0.5) * 0.0002;
+        data.velocity.y += (Math.random() - 0.5) * 0.0002;
+        data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-  // Limito la velocità massima
-  const maxVel = 0.02;  // puoi regolare questo valore
-  data.velocity.x = Math.max(Math.min(data.velocity.x, maxVel), -maxVel);
-  data.velocity.y = Math.max(Math.min(data.velocity.y, maxVel), -maxVel);
-  data.velocity.z = Math.max(Math.min(data.velocity.z, maxVel), -maxVel);
+        const maxVel = 0.02;
+        data.velocity.x = Math.max(Math.min(data.velocity.x, maxVel), -maxVel);
+        data.velocity.y = Math.max(Math.min(data.velocity.y, maxVel), -maxVel);
+        data.velocity.z = Math.max(Math.min(data.velocity.z, maxVel), -maxVel);
 
-  // Movimento
-  data.pos.x += data.velocity.x * dt * speedMultiplier;
-  data.pos.y += data.velocity.y * dt * speedMultiplier;
-  data.pos.z += data.velocity.z * dt * speedMultiplier;
+        data.pos.x += data.velocity.x * dt * speedMultiplier;
+        data.pos.y += data.velocity.y * dt * speedMultiplier;
+        data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-  // Limiti per non andare troppo lontano
-  const maxPosX = limitX * 0.8; // più vicino del limite totale
-  const maxPosY = limitY * 0.8;
-  const maxPosZ = limitZ * 0.8;
+        const maxX = limitX * 0.8;
+        const maxY = limitY * 0.8;
+        const maxZ = limitZ * 0.8;
 
-  if (Math.abs(data.pos.x) > maxPosX) {
-    data.velocity.x = -data.velocity.x * 0.8; // rimbalzo con riduzione velocità
-    data.pos.x = Math.sign(data.pos.x) * maxPosX;
-  }
-  if (Math.abs(data.pos.y) > maxPosY) {
-    data.velocity.y = -data.velocity.y * 0.8;
-    data.pos.y = Math.sign(data.pos.y) * maxPosY;
-  }
-  if (Math.abs(data.pos.z) > maxPosZ) {
-    data.velocity.z = -data.velocity.z * 0.8;
-    data.pos.z = Math.sign(data.pos.z) * maxPosZ;
-  }
+        if (Math.abs(data.pos.x) > maxX) {
+          data.velocity.x *= -0.8;
+          data.pos.x = Math.sign(data.pos.x) * maxX;
+        }
+        if (Math.abs(data.pos.y) > maxY) {
+          data.velocity.y *= -0.8;
+          data.pos.y = Math.sign(data.pos.y) * maxY;
+        }
+        if (Math.abs(data.pos.z) > maxZ) {
+          data.velocity.z *= -0.8;
+          data.pos.z = Math.sign(data.pos.z) * maxZ;
+        }
 
-  // Scala proporzionata
-  let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 0.9)));
-  const minScale = 1.0 * scaleMultiplier;
-  const maxScale = 1.3 * scaleMultiplier;
-  scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+        let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 0.9)));
+        const minScale = 1.0 * scaleMultiplier;
+        const maxScale = 1.3 * scaleMultiplier;
+        scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
-  const scaleY = scaleValue;
-  const scaleX = scaleY * data.aspectRatio;
+        const scaleY = scaleValue;
+        const scaleX = scaleY * data.aspectRatio;
 
-  data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-  data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
-});
-
+        data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+        data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
+      });
     }
   });
 
   semiContainer.setAttribute('semi-fluttuanti', '');
-      semiContainer.setAttribute('semi-fluttuanti', '');
-    </script>
+</script>
   </body>
 </html>

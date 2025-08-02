@@ -208,55 +208,57 @@
 
   avvia();
 
-  AFRAME.registerComponent('semi-fluttuanti', {
-    tick: function (time, timeDelta) {
-      const dt = timeDelta / 1000;
-      const speedMultiplier = 20 * scaleMultiplier;
+AFRAME.registerComponent('semi-fluttuanti', {
+  tick: function (time, timeDelta) {
+    const dt = timeDelta / 1000;
+    const speedMultiplier = 20 * scaleMultiplier;
 
-      semiData.forEach((data) => {
-        data.velocity.x += (Math.random() - 0.5) * 0.0002;
-        data.velocity.y += (Math.random() - 0.5) * 0.0002;
-        data.velocity.z += (Math.random() - 0.5) * 0.0002;
+    semiData.forEach((data) => {
+      data.velocity.x += (Math.random() - 0.5) * 0.0002;
+      data.velocity.y += (Math.random() - 0.5) * 0.0002;
+      data.velocity.z += (Math.random() - 0.5) * 0.0002;
 
-        const maxVel = 0.02;
-        data.velocity.x = Math.max(Math.min(data.velocity.x, maxVel), -maxVel);
-        data.velocity.y = Math.max(Math.min(data.velocity.y, maxVel), -maxVel);
-        data.velocity.z = Math.max(Math.min(data.velocity.z, maxVel), -maxVel);
+      const maxVel = 0.02;
+      data.velocity.x = Math.max(Math.min(data.velocity.x, maxVel), -maxVel);
+      data.velocity.y = Math.max(Math.min(data.velocity.y, maxVel), -maxVel);
+      data.velocity.z = Math.max(Math.min(data.velocity.z, maxVel), -maxVel);
 
-        data.pos.x += data.velocity.x * dt * speedMultiplier;
-        data.pos.y += data.velocity.y * dt * speedMultiplier;
-        data.pos.z += data.velocity.z * dt * speedMultiplier;
+      data.pos.x += data.velocity.x * dt * speedMultiplier;
+      data.pos.y += data.velocity.y * dt * speedMultiplier;
+      data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-        const maxX = limitX * 0.8;
-        const maxY = limitY * 0.8;
-        const maxZ = limitZ * 0.8;
+      // Ricalcola i limiti in tempo reale
+      const limiti = calcolaLimitiDinamici();
+      const maxX = limiti.x * 0.8;
+      const maxY = limiti.y * 0.8;
+      const maxZ = limiti.z * 0.8;
 
-        if (Math.abs(data.pos.x) > maxX) {
-          data.velocity.x *= -0.8;
-          data.pos.x = Math.sign(data.pos.x) * maxX;
-        }
-        if (Math.abs(data.pos.y) > maxY) {
-          data.velocity.y *= -0.8;
-          data.pos.y = Math.sign(data.pos.y) * maxY;
-        }
-        if (Math.abs(data.pos.z) > maxZ) {
-          data.velocity.z *= -0.8;
-          data.pos.z = Math.sign(data.pos.z) * maxZ;
-        }
+      if (Math.abs(data.pos.x) > maxX) {
+        data.velocity.x *= -0.8;
+        data.pos.x = Math.sign(data.pos.x) * maxX;
+      }
+      if (Math.abs(data.pos.y) > maxY) {
+        data.velocity.y *= -0.8;
+        data.pos.y = Math.sign(data.pos.y) * maxY;
+      }
+      if (Math.abs(data.pos.z) > maxZ) {
+        data.velocity.z *= -0.8;
+        data.pos.z = Math.sign(data.pos.z) * maxZ;
+      }
 
-        let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 0.9)));
-        const minScale = 1.0 * scaleMultiplier;
-        const maxScale = 1.3 * scaleMultiplier;
-        scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
+      let scaleValue = data.baseScale * (1 / (1 + Math.abs(data.pos.z * 0.9)));
+      const minScale = 1.0 * scaleMultiplier;
+      const maxScale = 1.3 * scaleMultiplier;
+      scaleValue = Math.max(Math.min(scaleValue, maxScale), minScale);
 
-        const scaleY = scaleValue;
-        const scaleX = scaleY * data.aspectRatio;
+      const scaleY = scaleValue;
+      const scaleX = scaleY * data.aspectRatio;
 
-        data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
-        data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
-      });
-    }
-  });
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
+    });
+  }
+});
 
   semiContainer.setAttribute('semi-fluttuanti', '');
 </script>

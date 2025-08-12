@@ -144,11 +144,11 @@
   }
 
   function createSeme(index, centered = false) {
-    const imgEl = document.getElementById(soffione${index + 1});
+    const imgEl = document.getElementById(`soffione${index + 1}`);
     const aspect = imgEl.naturalWidth / imgEl.naturalHeight || 1;
 
     const img = document.createElement('a-image');
-    img.setAttribute('src', #soffione${index + 1});
+    img.setAttribute('src', `#soffione${index + 1}`);
     img.setAttribute('rotation', '0 0 0');
     img.setAttribute('material', 'alphaTest: 0.5; transparent: true');
 
@@ -161,15 +161,15 @@
       posZ = (Math.random() - 0.5) * limitZ * 0.6;
     }
 
-    img.setAttribute('position', ${posX} ${posY} ${posZ});
+    img.setAttribute('position', `${posX} ${posY} ${posZ}`);
     img.setAttribute('scale', '1 1 1');
-    img.setAttribute('onclick', 
+    img.setAttribute('onclick', `
       document.getElementById('nameLabel').innerText='${names[index]}';
       document.getElementById('nameLabel').style.display='block';
       setTimeout(() => {
         document.getElementById('nameLabel').style.display='none';
       }, 2000);
-    );
+    `);
 
     semiContainer.appendChild(img);
 
@@ -189,7 +189,7 @@
   async function avvia() {
     const promises = [];
     for (let i = 1; i <= totalSemi; i++) {
-      promises.push(loadImage(soffione${i}));
+      promises.push(loadImage(`soffione${i}`));
     }
     await Promise.all(promises);
 
@@ -227,7 +227,6 @@ AFRAME.registerComponent('semi-fluttuanti', {
       data.pos.y += data.velocity.y * dt * speedMultiplier;
       data.pos.z += data.velocity.z * dt * speedMultiplier;
 
-      // Ricalcola i limiti in tempo reale
       const limiti = calcolaLimitiDinamici();
       const maxX = limiti.x * 0.8;
       const maxY = limiti.y * 0.8;
@@ -254,8 +253,8 @@ AFRAME.registerComponent('semi-fluttuanti', {
       const scaleY = scaleValue;
       const scaleX = scaleY * data.aspectRatio;
 
-      data.el.setAttribute('position', ${data.pos.x} ${data.pos.y} ${data.pos.z});
-      data.el.setAttribute('scale', ${scaleX} ${scaleY} ${scaleY});
+      data.el.setAttribute('position', `${data.pos.x} ${data.pos.y} ${data.pos.z}`);
+      data.el.setAttribute('scale', `${scaleX} ${scaleY} ${scaleY}`);
     });
   }
 });

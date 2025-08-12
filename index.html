@@ -99,10 +99,19 @@
     "Alessandro", "Cirillo", "Maria", "Alfredo", "Pino"
   ];
 
-  const semiData = [];
-  const scaleMultiplier = 1;
-
+ const semiData = [];
   let limitX, limitY, limitZ;
+
+  // Scala diversa se orizzontale o verticale
+  function calcolaScaleMultiplier() {
+    const rapporto = window.innerWidth / window.innerHeight;
+    if (rapporto > 1) {
+      return 1.4; // ingrandisce in orizzontale
+    } else {
+      return 1.0; // verticale come prima
+    }
+  }
+  let scaleMultiplier = calcolaScaleMultiplier();
 
   function calcolaLimitiDinamici() {
     const rapporto = window.innerWidth / window.innerHeight;
@@ -126,6 +135,7 @@
   }
 
   function aggiornaLimiti() {
+    scaleMultiplier = calcolaScaleMultiplier();
     const limiti = calcolaLimitiDinamici();
     limitX = limiti.x;
     limitY = limiti.y;
